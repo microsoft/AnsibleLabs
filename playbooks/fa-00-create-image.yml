@@ -1,0 +1,60 @@
+- name: Create a Docker container with function app
+  hosts: localhost
+  connection: local
+  vars_files:
+   - ./vars-myvars.yml
+
+  tasks:
+
+    - name: Create an Azure Container Registry for Azure Function
+      azure_rm_containerregistry:
+        name: "{{ vm_name }}{{ rnum }}acr"
+        resource_group: "{{ resource_group }}"
+        admin_user_enabled: true
+        sku: Premium
+        tags:
+            Release: Initial
+            Environment: RedHatSummit
+           
+    - name: Build Image using Azure Container Registry
+      azure_rm_resource:
+        api_version: '2018-09-01'
+        resource_group: "{{ resource_group }}"
+        provider: containerregistry
+        resource_type: registries
+        resource_name: "{{ vm_name }}{{ rnum }}acr"
+        subresource:
+          - type: tasks
+            name: "buildtask"
+        body:
+          properties: 
+            status: Enabled
+            platform: 
+              os: Linux
+              architecture: amd64
+            agentConfiguration: 
+              cpu: 2
+            step: 
+              type: Docker
+              imageNames: 
+                - functionapp
+              dockerFilePath: Dockerfile
+              contextPath: function-app-container
+              isPushEnabled: true
+              noCache: false
+            trigger: 
+              sourceTriggers: 
+                - name: mySourceTrigger
+                  sourceRepository: 
+                    sourceControlType: Github
+                    repositoryUrl: https://github.com/{{ github_id }}/RedHatSummit2019
+                    branch: master
+                    sourceControlAuthProperties: 
+                      tokenType: PAT
+                      token:  "{{ github_token }}"
+                  sourceTriggerEvents: 
+                    - commit
+              baseImageTrigger: 
+                name: myBaseImageTrigger
+                baseImageTriggerType: Runtime
+          location: "{{ location }}"

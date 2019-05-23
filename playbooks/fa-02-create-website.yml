@@ -1,0 +1,28 @@
+- name: Create function app with Ansible in Docker container
+  hosts: localhost
+  connection: local
+  vars_files:
+   - ./vars-myvars.yml
+  tasks:
+
+    - name: Create index.html file from template
+      copy:
+        src: "../function-app-container/index-template.html"
+        dest: "../function-app-container/index.html"
+
+    - name: Adjust function app URL
+      replace:
+        path: "../function-app-container/index.html"
+        regexp: "FUNCTIONNAME"
+        replace: "{{ vm_name }}functionapp"
+
+    - name: Create container $web and upload index.html
+      azure_rm_storageblob:
+        resource_group: "{{ resource_group }}"
+        storage_account_name: "{{ vm_name | lower }}2019func"
+        container: "$web"
+        blob: "index.html"
+        src: "../function-app-container/index.html"
+        public_access: "container"
+        content_type: "text/html"
+        force: yes

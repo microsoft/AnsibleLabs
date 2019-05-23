@@ -1,0 +1,125 @@
+- name: Deploy HPC Compute Node and Network Infrastructure
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+
+  - name: Create Compute Node 1 NIC
+    azure_rm_networkinterface:
+      name: "{{ vm_name }}-hpc-compute1-nic"
+      enable_accelerated_networking: no
+      os_type: Linux
+      resource_group: "{{ resource_group }}"
+      security_group_name: "{{ vm_name }}-hpc-nsg"
+      subnet_name: "{{ vm_name }}-hpc-subnet"
+      virtual_network: "{{ vm_name }}-hpc-vnet"
+      ip_configurations:
+        - name: ipconfig1
+          primary: True
+          public_ip_address_name: "{{ vm_name }}-hpc-compute1-pip-{{ rnum }}"
+          public_ip_allocation_method: Dynamic
+          private_ip_allocation_method: Dynamic
+
+  - name: Create Compute Node 2 NIC
+    azure_rm_networkinterface:
+      name: "{{ vm_name }}-hpc-compute2-nic"
+      enable_accelerated_networking: no
+      os_type: Linux
+      resource_group: "{{ resource_group }}"
+      security_group_name: "{{ vm_name }}-hpc-nsg"
+      subnet_name: "{{ vm_name }}-hpc-subnet"
+      virtual_network: "{{ vm_name }}-hpc-vnet"
+      ip_configurations:
+        - name: ipconfig1
+          primary: True
+          public_ip_address_name: "{{ vm_name }}-hpc-compute2-pip-{{ rnum }}"
+          public_ip_allocation_method: Dynamic
+          private_ip_allocation_method: Dynamic
+
+  - name: Create Compute Node 3 NIC
+    azure_rm_networkinterface:
+      name: "{{ vm_name }}-hpc-compute3-nic"
+      enable_accelerated_networking: no
+      os_type: Linux
+      resource_group: "{{ resource_group }}"
+      security_group_name: "{{ vm_name }}-hpc-nsg"
+      subnet_name: "{{ vm_name }}-hpc-subnet"
+      virtual_network: "{{ vm_name }}-hpc-vnet"
+      ip_configurations:
+        - name: ipconfig1
+          primary: True
+          public_ip_address_name: "{{ vm_name }}-hpc-compute3-pip-{{ rnum }}"
+          public_ip_allocation_method: Dynamic
+          private_ip_allocation_method: Dynamic
+
+  - name: Create an availability set with default options
+    azure_rm_availabilityset:
+      name: "{{ vm_name }}-hpc-availset-{{ rnum }}"
+      sku: Aligned
+      state: present
+      resource_group: "{{ resource_group }}"
+
+  - name: Create HPC Compute Node 1 VM 
+    azure_rm_virtualmachine:
+      availability_set: "{{ vm_name }}-hpc-availset-{{ rnum }}"
+      admin_username: "{{ admin_username }}"
+      managed_disk_type: Standard_LRS
+      name: "{{ vm_name }}-hpc-compute1"
+      network_interface_names: "{{ vm_name }}-hpc-compute1-nic"
+      os_type: Linux
+      resource_group: "{{ resource_group }}"
+      short_hostname: "{{ vm_name }}-hpc-compute1"
+      vm_size: "{{ hp_compute_size }}"
+      ssh_password_enabled: false
+      ssh_public_keys:
+        - path: /home/{{ admin_username }}/.ssh/authorized_keys
+          key_data: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      image:
+        offer: Centos-HPC
+        publisher: OpenLogic
+        sku: 7.4
+        version: 7.4.20180719
+
+  - name: Create HPC Compute Node 2 VM
+    azure_rm_virtualmachine:
+      availability_set: "{{ vm_name }}-hpc-availset-{{ rnum }}"
+      admin_username: "{{ admin_username }}"
+      managed_disk_type: Standard_LRS
+      name: "{{ vm_name }}-hpc-compute2"
+      network_interface_names: "{{ vm_name }}-hpc-compute2-nic"
+      os_type: Linux
+      resource_group: "{{ resource_group }}"
+      short_hostname: "{{ vm_name }}-hpc-compute2"
+      vm_size: "{{ hp_compute_size }}"
+      ssh_password_enabled: false
+      ssh_public_keys:
+        - path: /home/{{ admin_username }}/.ssh/authorized_keys
+          key_data: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      image:
+        offer: Centos-HPC
+        publisher: OpenLogic
+        sku: 7.4
+        version: 7.4.20180719
+
+  - name: Create HPC Comptue Node 3 VM
+    azure_rm_virtualmachine:
+      availability_set: "{{ vm_name }}-hpc-availset-{{ rnum }}"
+      admin_username: "{{ admin_username }}"
+      managed_disk_type: Standard_LRS
+      name: "{{ vm_name }}-hpc-compute3"
+      network_interface_names: "{{ vm_name }}-hpc-compute3-nic"
+      os_type: Linux
+      resource_group: "{{ resource_group }}"
+      short_hostname: "{{ vm_name }}-hpc-compute3"
+      vm_size: "{{ hp_compute_size }}"
+      ssh_password_enabled: false
+      ssh_public_keys:
+        - path: /home/{{ admin_username }}/.ssh/authorized_keys
+          key_data: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      image:
+        offer: Centos-HPC
+        publisher: OpenLogic
+        sku: 7.4
+        version: 7.4.20180719

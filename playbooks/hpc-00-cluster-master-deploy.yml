@@ -1,0 +1,87 @@
+- name: Deploy HPC Master Node and Network Infrastructure
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+
+  - name: Create HPC vNet
+    azure_rm_virtualnetwork:
+      resource_group: "{{ resource_group }}"
+      name: "{{ vm_name }}-hpc-vnet"
+      address_prefixes: "10.10.0.0/16"
+
+  - name: Create HPC Subnet
+    azure_rm_subnet:
+      resource_group: "{{ resource_group }}"
+      name: "{{ vm_name }}-hpc-subnet"
+      address_prefix: "10.10.100.0/24"
+      virtual_network: "{{ vm_name }}-hpc-vnet"
+
+  - name: Create Master Node Public IP
+    azure_rm_publicipaddress:
+      resource_group: "{{ resource_group }}"
+      name: "{{ vm_name }}-hpc-master-pip-{{ rnum }}"
+      allocation_method: Static
+      domain_name: "{{ vm_name }}-hpc-master-{{ rnum }}"
+
+  - name: Create Master Node NSG
+    azure_rm_securitygroup:
+      resource_group: "{{ resource_group }}"
+      name: "{{ vm_name }}-hpc-nsg"
+      rules:
+          - name: "AllowSSH"
+            access: Allow
+            destination_port_range: 22
+            direction: Inbound
+            priority: 1010
+            protocol: Tcp
+
+  - name: Create Master Node NIC
+    azure_rm_networkinterface:
+      name: "{{ vm_name }}-hpc-master-nic"
+      os_type: Linux
+      resource_group: "{{ resource_group }}"
+      security_group_name: "{{ vm_name }}-hpc-nsg"
+      subnet_name: "{{ vm_name }}-hpc-subnet"
+      virtual_network: "{{ vm_name }}-hpc-vnet"
+      ip_configurations:
+        - name: ipconfig1
+          primary: True
+          public_ip_address_name: "{{ vm_name }}-hpc-master-pip-{{ rnum }}"
+          public_ip_allocation_method: Dynamic
+          private_ip_allocation_method: Dynamic
+
+  - name: Create Master HPC Infrastructure Node
+    azure_rm_virtualmachine:
+      admin_username: "{{ admin_username }}"
+      managed_disk_type: Standard_LRS
+      name: "{{ vm_name }}-hpc-master"
+      network_interface_names: "{{ vm_name }}-hpc-master-nic"
+      os_type: Linux
+      resource_group: "{{ resource_group }}"
+      short_hostname: "{{ vm_name }}-hpc-master"
+      vm_size: "{{ hp_infra_size }}"
+      ssh_password_enabled: false
+      ssh_public_keys:
+        - path: /home/{{ admin_username }}/.ssh/authorized_keys
+          key_data: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      image:
+        offer: CentOS-LVM
+        publisher: OpenLogic
+        sku: 7-LVM
+        version: 7.6.20190130
+      data_disks:
+        - lun: 0
+          disk_size_gb: 8 
+          managed_disk_type: Standard_LRS
+        - lun: 1 
+          disk_size_gb: 8
+          managed_disk_type: Standard_LRS
+        - lun: 2 
+          disk_size_gb: 8
+          managed_disk_type: Standard_LRS
+        - lun: 3
+          disk_size_gb: 8
+          managed_disk_type: Standard_LRS

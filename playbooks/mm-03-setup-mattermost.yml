@@ -1,0 +1,97 @@
+- name: Determine IP address of Mattermost VM
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+    - name: Get Mattermost VM IP Address
+      azure_rm_publicipaddress_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-mattermost-master-pip-{{ rnum }}"
+      register: output
+
+    - name: Adding public IP to hosts
+      add_host:
+        hostname: "{{ output.ansible_facts.azure_publicipaddresses[0].properties.ipAddress }}"
+        groups: mmostserver
+ 
+- name: Install Mattermost Server
+  hosts: mmostserver
+  remote_user: "{{ admin_username }}"
+  become: yes  
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+    - name: Create Mattermost User
+      user:
+        name: mattermost
+        state: present
+        shell: /bin/bash
+        system: yes
+        createhome: yes
+        home: /home/mattermost
+
+    - name: Download and unpack MatterMost tarball from central repository server
+      unarchive:
+        src: "https://releases.mattermost.com/5.9.0/mattermost-5.9.0-linux-amd64.tar.gz"
+        dest: "/opt"
+        copy: no
+
+    - name: Create Mattermost storage directory
+      file:
+        path: /opt/mattermost
+        state: directory
+
+    - name: Create Mattermost storage directory
+      file:
+        path: /opt/mattermost/data
+        state: directory
+
+    - name: Ensure Mattermost application is owned by mattermost user
+      file:
+        path: /opt/mattermost
+        owner: mattermost
+        group: mattermost
+        recurse: yes
+
+    - name: Ensure sticky bit is set on Mattermost application directories
+      file:
+        path: /opt/mattermost
+        state: directory
+        recurse: yes
+        mode: "g+w"
+
+    - name: Configure Mattermost Data Source
+      command: "/bin/sed -i s+:mostest@tcp(dockerhost:3306)/mattermost_test+@{{ vm_name }}-mattermost-mysql-{{ rnum }}:{{ mysql_password }}@tcp({{ vm_name }}-mattermost-mysql-{{ rnum }}.mysql.database.azure.com:3306)/{{ mysql_database_name }}+g /opt/mattermost/config/config.json"
+      args:
+        warn: false
+
+    - name: Downloading systemd service script for Mattermost
+      get_url:
+        url: https://raw.githubusercontent.com/stuartatmicrosoft/RedHatSummit2019/master/provision-scripts/mattermost.service
+        dest: /etc/systemd/system
+        mode: 0664
+
+    - name: Force systemd to re-read configuration
+      systemd: daemon_reload=yes
+
+    - name: Enable Mattermost application within systemd
+      systemd:
+        name: mattermost
+        enabled: yes
+        masked: no
+
+    - name: Start Mattermost application within systemd
+      systemd: state=started name=mattermost
+
+    - name: Ensure firewalld is installed
+      yum: name=firewalld state=installed
+
+    - name: Ensure firewalld is disabled
+      systemd: name=firewalld enabled=no
+
+    - name: Ensure firewalld is stopped
+      systemd: name=firewalld state=stopped
+      ignore_errors: yes

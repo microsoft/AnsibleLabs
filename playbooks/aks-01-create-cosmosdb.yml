@@ -1,0 +1,48 @@
+- name: Deploy CosmosDB & K8S Infrastructure to support Hero Voting App
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+  roles:
+    - ../modules
+
+  tasks:
+
+    - name: Create Cosmos DB (MongoDB) for Lab Exercises
+      azure_rm_cosmosdbaccount:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-cosmosdb"
+        kind: mongo_db
+        state: present
+        enable_aggregation_pipeline: true
+        enable_multiple_write_locations: false
+        consistency_policy:
+          default_consistency_level: "consistent_prefix"
+        geo_rep_locations:
+          - name: "{{ location }}"
+            failover_priority: 0
+        database_account_offer_type: Standard
+
+    - name: Obtain CosmosDB Facts
+      azure_rm_cosmosdbaccount_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-cosmosdb"
+        retrieve_keys: all
+        retrieve_connection_strings: yes
+      register: cosmosdb_output
+
+    - name: Setting CosmosDB Connection String Variable
+      set_fact:
+        constr: "mongodb://{{ cosmosdb_output.accounts[0].name }}:{{ cosmosdb_output.accounts[0].primary_master_key }}@{{ cosmosdb_output.accounts[0].name }}.documents.azure.com:10255/webratings?ssl=true&replicaSet=globaldb"
+
+    - name: Setting K8S Secret with kubectl
+      command: "/usr/bin/kubectl create secret generic heroes-cosmosdb-secret --from-literal=cosmosUri={{ constr }}"
+      ignore_errors: yes
+
+    - name: Deploying AKS Application
+      command: "/usr/bin/kubectl apply -f ./aks-k8s-hero-voting-deploy.yml"
+      ignore_errors: yes
+
+    - debug:
+        msg: "The AKS application is being created.  Keep an eye on the output of 'kubectl get service' until you notice an IP address has been assigned to the load balancer. When it has, attempt to connect to it on port 8080."
+

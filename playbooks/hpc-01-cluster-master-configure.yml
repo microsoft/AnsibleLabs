@@ -1,0 +1,222 @@
+- name: Determine Network Address of Master HPC Infrastructure Node
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+
+    - name: Getting Public IP address of Master HPC Infrastructure Node
+      azure_rm_publicipaddress_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-hpc-master-pip-{{ rnum }}"
+      register: output
+
+    - name: Adding Public IP to Ansible host group
+      add_host:
+        hostname: "{{ output.ansible_facts.azure_publicipaddresses[0].properties.ipAddress }}"
+        groups: masternode
+
+    - name: Setting Public IP variable
+      set_fact:
+        masternode_ip: "{{ output.ansible_facts.azure_publicipaddresses[0].properties.ipAddress }}"  
+
+- name: Configure Master HPC Infrastructure Node
+  hosts: masternode
+  remote_user: "{{ admin_username }}"
+  become: yes  
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+
+    - name: Ensure deltarpm package is installed
+      yum: 
+        name: deltarpm
+        state: latest
+
+    - name: Ensure required RPM packages are installed
+      yum:
+        name:
+          - nfs-utils
+          - libsemanage-python
+          - libsemanage-devel
+          - policycoreutils-python
+
+    - name: Ensure NFS is enabled
+      systemd: name=nfs-server enabled=yes
+
+    - name: Ensure NFS is started
+      systemd: name=nfs-server state=started
+      ignore_errors: yes
+
+    - name: Ensure rpcbind is enabled
+      systemd: name=rpcbind enabled=yes
+
+    - name: Ensure rpcbind is started
+      systemd: name=rpcbind state=started
+      ignore_errors: yes
+
+    - name: Creating Partition for RAID drive on LUN 0
+      parted:
+        device: /dev/sdc
+        number: 1
+        state: present
+        flags: [ raid ]
+
+    - name: Creating Partition for RAID drive on LUN 1
+      parted:
+        device: /dev/sdd
+        number: 1
+        state: present
+        flags: [ raid ]
+
+    - name: Creating Partition for RAID drive on LUN 2
+      parted:
+        device: /dev/sde
+        number: 1
+        state: present
+        flags: [ raid ]
+
+    - name: Creating Partition for RAID drive on LUN 3
+      parted:
+        device: /dev/sdf
+        number: 1
+        state: present
+        flags: [ raid ]
+
+    - name: Create RAID 0 Array
+      shell: "mdadm --create /dev/md0 --level=0 --raid-devices=4 /dev/sdc1 /dev/sdd1 /dev/sde1 /dev/sdf1"
+      args:
+        creates: /dev/md0
+
+    - name: Create an ext4 filesystem on /dev/md0
+      filesystem:
+        fstype: ext4
+        dev: /dev/md0
+
+    - name: Create mdadm.conf
+      shell: "mdadm --detail --scan >> /etc/mdadm.conf"
+      args:
+        creates: /etc/mdadm.conf
+        chdir: /etc
+
+    - name: Add e-mail contact to mdadm.conf
+      lineinfile:
+        path: /etc/mdadm.conf
+        line: "MAILADDR root@localhost"
+        create: no
+
+    - name: Ensure mdmonitor is enabled
+      systemd: name=mdmonitor enabled=yes
+
+    - name: Ensure mdmonitor is started
+      systemd: name=mdmonitor state=started
+      ignore_errors: yes
+
+    - name: Mounting /share/data and creating required /etc/fstab entry
+      mount:
+        path: "/share/data"
+        src: "/dev/md0"
+        fstype: "ext4"
+        opts: "defaults,nofail"
+        state: "mounted"
+
+    - name: Creating hpc group
+      group:
+        name: hpc
+        state: present
+        gid: 7007
+
+    - name: Creating hpc user
+      user:
+        name: "hpcuser"
+        comment: "hpc user account"
+        uid: "7007"
+        groups: "hpc"
+        shell: "/bin/bash"
+        home: "/share/home"
+
+    - name: Setting /share/home SELinux Context
+      sefcontext:
+         target: "/share/home"
+         setype: "user_home_dir_t"
+         state: "present"
+
+    - name: Adding NFS shares to /etc/exports
+      lineinfile:
+        dest: /etc/exports
+        state: present
+        line:  '{{ item }}'
+      with_items:
+        - '/share/home   *(rw,async)'
+        - '/share/data   *(rw,async)'
+
+    - name: Re-exporting NFS shares
+      shell: "exportfs -rav"
+
+    - name: Allow hpc group to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%hpc'
+        line: '%hpc ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+    - name: Creating /share/home/.ansible/tmp
+      file:
+        path: /share/home/.ansible/tmp
+        state: directory
+        owner: hpcuser       
+        group: hpcuser
+        mode: 0755
+
+    - name: Generating SSH keypair for hpc user
+      command: "ssh-keygen -t rsa -q -P '' -f /share/home/.ssh/id_rsa"
+      become: yes
+      become_user: hpcuser
+      args:
+        creates: /share/home/.ssh/id_rsa.pub
+        chdir: /share/home
+ 
+    - name: Creating SSH configuration file for hpc user
+      lineinfile:
+        owner: hpcuser
+        group: hpcuser 
+        mode: 0644
+        dest: /share/home/.ssh/config
+        state: present
+        create: yes
+        line: '{{ item }}'
+      with_items:
+        - 'Host *'
+        - '    StrictHostKeyChecking no'
+        - '    UserKnownHostsFile /dev/null'
+        - '    PasswordAuthentication no'
+
+    - name: Adding SSH public key to authorized_keys to enable password-less SSH
+      copy:
+        src: "/share/home/.ssh/id_rsa.pub"
+        dest: "/share/home/.ssh/authorized_keys"
+        remote_src: yes
+        owner: hpcuser
+        group: hpcuser 
+        mode: preserve
+
+    - name: Get fullpingpong.sh script
+      get_url:
+        url: https://raw.githubusercontent.com/grandparoach/azure-hpc/Lab/Compute-Grid-Infra/Lab/full-pingpong.sh
+        dest: /share/home/full-pingpong.sh
+        mode: 0755
+        owner: hpcuser
+        group: hpcuser
+
+    - name: Set use_nfs_home_dirs SELinux flag on and keep it persistent across reboots
+      seboolean:
+        name: use_nfs_home_dirs
+        state: yes
+        persistent: yes
+
+    - name: Restoring /share/home SELinux Context
+      command: "restorecon -irv /share/home"
+

@@ -1,0 +1,68 @@
+- name: Create HDInsight Cluster
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+
+    - name: Create a Storage Account for HDInsight
+      azure_rm_storageaccount:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}2019hdi40"
+        account_type: Standard_LRS
+        tags:
+          Tier: Development
+          Venue: RedHatSummit
+      register: storage_create_output
+
+    - name: Getting Storage Account Keys from Azure REST API
+      azure_rm_resource:
+        api_version: '2018-07-01'
+        method: POST
+        resource_group: "{{ resource_group }}"
+        provider: storage
+        resource_type: storageaccounts
+        resource_name: "{{ vm_name }}2019hdi40"
+        subresource:
+          - type: listkeys
+      register: storage_rest_output
+
+    - name: Create Storage blob container for HDInsight data
+      azure_rm_storageblob:
+        resource_group: "{{ resource_group }}"
+        storage_account_name: "{{ vm_name }}2019hdi40"
+        blob_type: block
+        container: "hdinsight"
+      register: blob_output
+
+    - name: Create HDInsight Cluster
+      azure_rm_hdinsightcluster:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-hdinsight-cluster-40"
+        location: eastus
+        cluster_version: "4.0"
+        os_type: linux
+        tier: standard
+        cluster_definition:
+          kind: spark
+          gateway_rest_username: "{{ admin_username }}"
+          gateway_rest_password: "{{ admin_password }}"
+        storage_accounts:
+          - name: "{{ storage_create_output.state.name }}.blob.core.windows.net"
+            is_default: yes
+            container: "hdinsight"
+            key: "{{ storage_rest_output['response']['keys'][0]['value'] }}"
+        compute_profile_roles:
+          - name: headnode
+            target_instance_count: 1
+            vm_size: Standard_D3
+            linux_profile:
+              username: "{{ admin_username }}"
+              password: "{{ admin_password }}"
+          - name: workernode
+            target_instance_count: 1
+            vm_size: Standard_D3
+            linux_profile:
+              username: "{{ admin_username }}"
+              password: "{{ admin_password }}"

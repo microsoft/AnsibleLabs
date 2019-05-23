@@ -1,0 +1,63 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "virtualMachineName": {
+      "value": "master-vnc-desktop"
+    },
+    "virtualMachineSize": {
+      "value": "Standard_D4s_v3"
+    },
+    "adminUsername": {
+      "value": "student"
+    },
+    "virtualNetworkName": {
+      "value": "master-vnc-desktop-vnet"
+    },
+    "networkInterfaceName": {
+      "value": "master-vnc-desktop-vm-nic"
+    },
+    "networkSecurityGroupName": {
+      "value": "master-vnc-desktop-nsg"
+    },
+    "adminPassword": {
+      "value": "blahblah12345%"
+    },
+    "addressPrefix": {
+      "value": "10.100.0.0/16"
+    },
+    "subnetName": {
+      "value": "default"
+    },
+    "subnetPrefix": {
+      "value": "10.100.0.0/24"
+    },
+    "publicIpAddressName": {
+      "value": "GEN-UNIQUE-10"
+    },
+    "publicIpAddressType": {
+      "value": "Dynamic"
+    },
+    "publicIpAddressSku": {
+      "value": "Basic"
+    },
+    "applicationDisplayName": {
+      "value": "GET-SERVICEPRINCIPAL-NAME"
+    },
+    "applicationSecretKey": {
+      "value": "GET-SERVICEPRINCIPAL-SECRET"
+    },
+    "applicationAppId": {
+      "value": "GET-SERVICEPRINCIPAL-APPLICATION-ID"
+    },
+    "applicationObjectId": {
+      "value": "GET-SERVICEPRINCIPAL-SPOBJECT-ID"
+    },
+    "azureUserName": {
+      "value": "GET-AZUSER-UPN"
+    },
+    "azureUserPassword": {
+      "value": "GET-AZUSER-PASSWORD"
+    }
+  }
+}

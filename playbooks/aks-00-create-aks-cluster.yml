@@ -1,0 +1,31 @@
+- name: Deploy AKS Infrastructure to support Hero Voting App
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+  roles:
+    - ../modules
+
+  tasks:
+    - name: Create a managed Azure Container Services (AKS) instance to support Hero Voting App
+      azure_rm_aks:
+        name: "{{ vm_name }}-aks"
+        resource_group: "{{ resource_group }}"
+        kubernetes_version: "1.13.5"
+        dns_prefix: "{{ vm_name }}-dns"
+        linux_profile:
+          admin_username:  "{{ admin_username }}"
+          ssh_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+        service_principal:
+          client_id: "{{ lookup('env', 'AZURE_CLIENT_ID') }}"
+          client_secret: "{{ lookup('env', 'AZURE_SECRET') }}"
+        agent_pool_profiles:
+          - name: default
+            count: 2 
+            vm_size: Standard_D2_v2
+        tags:
+          Environment: RedHatSummit
+      register: aks_output
+
+    - debug:
+        msg: "The name of your AKS cluster is: {{ aks_output.name }}"

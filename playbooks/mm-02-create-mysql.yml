@@ -1,0 +1,40 @@
+- name: Deploy Mattermost MySQL PaaS Database
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+  - name: Create MySQL Server for Mattermost Database
+    azure_rm_mysqlserver:
+      resource_group: "{{ resource_group }}"
+      name: "{{ vm_name }}-mattermost-mysql-{{ rnum }}"
+      sku:
+        name: B_Gen5_1
+        tier: Basic
+      enforce_ssl: False
+      admin_username: "{{ mysql_username }}"
+      admin_password: "{{ mysql_password }}"
+      storage_mb: 51200
+
+  - name: Create instance of MySQL Database
+    azure_rm_mysqldatabase:
+      resource_group: "{{ resource_group }}"
+      server_name: "{{ vm_name }}-mattermost-mysql-{{ rnum }}"
+      name: "{{ mysql_database_name }}"
+
+  - name: Getting Public IP address of the application VM
+    azure_rm_publicipaddress_facts:
+      resource_group: "{{ resource_group }}"
+      name: "{{ vm_name }}-mattermost-master-pip-{{ rnum }}"
+    register: output
+
+
+  - name: Add MySQL Firewall Rule
+    azure_rm_mysqlfirewallrule:
+      resource_group: "{{ resource_group }}"
+      server_name: "{{ vm_name }}-mattermost-mysql-{{ rnum }}"
+      name: Mattermost_Rule
+      start_ip_address: "{{ output.ansible_facts.azure_publicipaddresses[0].properties.ipAddress }}"
+      end_ip_address: "{{ output.ansible_facts.azure_publicipaddresses[0].properties.ipAddress }}"
+

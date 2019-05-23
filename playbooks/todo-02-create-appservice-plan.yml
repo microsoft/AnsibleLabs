@@ -1,0 +1,15 @@
+- name: Create App Service Plan to modernize TODO Application
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+
+    - name: Create an Azure App Service Plan for TODO Application
+      azure_rm_appserviceplan:
+        name: "{{ vm_name }}-appservice-plan"
+        is_linux: true
+        number_of_workers: 1
+        resource_group: "{{ resource_group }}"
+        sku: S1

@@ -1,0 +1,89 @@
+- name: Create Virtual Machine Scale Set for Mattermost
+  hosts: localhost
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+
+    - name: Add VMSS Subnet to existing Virtual network
+      azure_rm_subnet:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-mattermost-vmss-subnet"
+        address_prefix: "10.10.30.0/24"
+        virtual_network: "{{ vm_name }}-mattermost-vnet"
+
+    - name: Create Public IP Address for VMSS
+      azure_rm_publicipaddress:
+        resource_group: "{{ resource_group }}"
+        allocation_method: Static
+        name: "{{ vm_name }}-mattermost-vmss-pip-{{ rnum }}"
+        domain_name: "{{ vm_name }}-mattermost-vmss-{{ rnum }}"
+
+    - name: Create Load Balancer for Mattermost VMSS
+      azure_rm_loadbalancer:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-mattermost-lb-{{ rnum }}"
+        frontend_ip_configurations:
+          - name: frontendipconf0
+            public_ip_address: "{{ vm_name }}-mattermost-vmss-pip-{{ rnum }}"
+        backend_address_pools:
+          - name: backendaddrpool0
+        probes:
+          - name: prob0
+            port: 8065
+            interval: 10
+            fail_count: 3
+            protocol: Tcp
+        inbound_nat_pools:
+          - name: inboundnatpool0
+            frontend_ip_configuration_name: frontendipconf0
+            protocol: Tcp
+            frontend_port_range_start: 50000
+            frontend_port_range_end: 50040
+            backend_port: 22
+        load_balancing_rules:
+          - name: lbrbalancingrule0
+            frontend_ip_configuration: frontendipconf0
+            backend_address_pool: backendaddrpool0
+            idle_timeout: 4
+            load_distribution: Default
+            frontend_port: 80
+            backend_port: 8065
+            probe: prob0
+
+    - name: Create VMSS
+      azure_rm_virtualmachinescaleset:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-mattermost-vmss"
+        vm_size: Standard_DS1_v2
+        admin_username: "{{ admin_username }}"
+        ssh_password_enabled: false
+        ssh_public_keys:
+          - path: /home/{{ admin_username }}/.ssh/authorized_keys
+            key_data: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+        capacity: 2
+        virtual_network_name: "{{ vm_name }}-mattermost-vnet"
+        subnet_name: "{{ vm_name }}-mattermost-vmss-subnet"
+        upgrade_policy: Manual
+        tier: Standard
+        managed_disk_type: Standard_LRS
+        os_disk_caching: ReadWrite
+        security_group: "{{ vm_name }}-mattermost-nsg"
+        image:
+          name: "{{ vm_name }}-mattermost-disk-image"
+          resource_group: "{{ resource_group }}"
+        load_balancer: "{{ vm_name }}-mattermost-lb-{{ rnum }}"
+
+    - name: Getting Public IP address of the LB
+      azure_rm_publicipaddress_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-mattermost-vmss-pip-{{ rnum }}"
+      register: output
+
+    - name: Add MySQL Firewall Rule
+      azure_rm_mysqlfirewallrule:
+        resource_group: "{{ resource_group }}"
+        server_name: "{{ vm_name }}-mattermost-mysql-{{ rnum }}"
+        name: VMSS_Rule
+        start_ip_address: "{{ output.ansible_facts.azure_publicipaddresses[0].properties.ipAddress }}"
+        end_ip_address: "{{ output.ansible_facts.azure_publicipaddresses[0].properties.ipAddress }}"

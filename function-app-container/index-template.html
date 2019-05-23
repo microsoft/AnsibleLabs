@@ -1,0 +1,72 @@
+<html>
+<head>
+<title>Ajax POST HTTP Request</title>
+<SCRIPT TYPE="text/javascript" LANGUAGE="JavaScript"> 
+function ajaxRequest(){
+     var activexmodes=["Msxml2.XMLHTTP", "Microsoft.XMLHTTP"]; //activeX versions to check for in IE
+     if (window.ActiveXObject){ //Test for support for ActiveXObject in IE first (as XMLHttpRequest in IE7 is broken)
+      for (var i=0; i<activexmodes.length; i++){
+       try{
+        return new ActiveXObject(activexmodes[i]);
+       }
+       catch(e){
+        //suppress error
+       }
+      }
+     }
+     else if (window.XMLHttpRequest) // if Mozilla, Safari etc
+      return new XMLHttpRequest();
+     else
+      return false;
+}
+ 
+function ajaxpost(){
+    var mypostrequest=new XMLHttpRequest();
+    mypostrequest.onreadystatechange=function(){
+     if (this.readyState==4){
+      if (this.status==200){
+        alert(JSON.parse(this.responseText)['output']);
+      }
+      else{
+       alert("An error has occured making the request " + this.status + " " + this.readyState);
+      }
+     }
+    }
+
+    mypostrequest.open("POST", "https://FUNCTIONNAME.azurewebsites.net/api/HttpTrigger?" +
+                               "subscription_id=" + document.getElementById("subscription_id").value + "&" +
+                               "tenant=" + document.getElementById("tenant").value + "&" +
+                               "client_id=" + document.getElementById("client_id").value + "&" +
+                               "secret=" + document.getElementById("secret").value, true);
+    mypostrequest.setRequestHeader("Content-type", "text/plain");
+    mypostrequest.send(document.getElementById("playbook").value);
+}
+ 
+</SCRIPT>
+</head>
+<body>
+  <div/>
+  Enter your playbook here:
+  <div/>
+  <textarea id="playbook" rows="10" cols="120"></textarea>
+  <div/>
+  Subscription Id:
+  <div/>
+  <textarea id="subscription_id" cols="80"></textarea>
+  <div/>
+  Tenant:
+  <div/>
+  <textarea id="tenant" cols="80"></textarea>
+  <div/>
+  Client Id:
+  <div/>
+  <textarea id="client_id" cols="80"></textarea>
+  <div/>
+  Secret:
+  <div/>
+  <textarea id="secret" cols="80"></textarea>
+  <div/>
+  <input id="clickMe" type="button" value="Run Playbook" onclick="ajaxpost();" />
+  <div id="result"></div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+[Unit]
+Description=websockify.proxy
+After=syslog.target network.target
+
+[Service]
+Type=simple
+#ExecStart=/usr/bin/websockify --web=/usr/share/novnc/ --cert=/etc/pki/tls/certs/novnc.pem 6080 localhost:5904
+ExecStart=/bin/websockify --web /usr/local/noVNC-1.1.0 --cert /etc/pki/tls/certs/novnc.pem 6080 localhost:5904
+PIDFile=/home/student/.vnc/%H%i.pid
+ExecStop=/bin/sh -c '/usr/bin/killall websockify'
+KillMode=process
+Restart=on-failure
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
+

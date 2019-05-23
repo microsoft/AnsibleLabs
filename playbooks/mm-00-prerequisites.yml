@@ -1,0 +1,81 @@
+- name: Create Application Gateway for Mattermost Application
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+
+    - name: Create Mattermost Virtual Network
+      azure_rm_virtualnetwork:
+        resource_group: '{{ resource_group }}'
+        name: "{{ vm_name }}-mattermost-vnet"
+        address_prefixes: "10.10.0.0/16"
+
+    - name: Create Mattermost Application Gateway Subnet
+      azure_rm_subnet:
+        resource_group: '{{ resource_group }}'
+        name: "{{ vm_name }}-mattermost-ag-subnet"
+        address_prefix: "10.10.40.0/24"
+        virtual_network: "{{ vm_name }}-mattermost-vnet"
+      register: subnet_output
+
+    - name: Create Mattermost Application Gateway Public IP
+      azure_rm_publicipaddress:
+        resource_group: "{{ resource_group }}" 
+        allocation_method: Dynamic
+        name: "{{ vm_name }}-mattermost-ag-pip-{{ rnum }}"
+        domain_name_label: '{{ vm_name }}-mattermost-ag-{{ rnum }}'
+      register: pip_output
+
+    - name: Create Mattermost Application Gateway (this will take roughly 15 mins.....)
+      azure_rm_appgateway:
+        resource_group: "{{ resource_group }}"
+        name: '{{ vm_name }}-mattermost-ag'
+        sku:
+          name: standard_small
+          tier: standard
+          capacity: 2
+        ssl_policy:
+          policy_type: predefined
+          policy_name: ssl_policy20150501
+          disabled_ssl_protocols:
+            - tls_v1_0
+          cipher_suites:
+            - tls_ecdhe_ecdsa_with_aes_256_gcm_sha384
+        authentication_certificates:
+          - name: cert1
+            data: "{{ lookup('file', 'cert1.txt') }}"
+        ssl_certificates:
+          - name: cert2
+            password: your-password
+            data: "{{ lookup('file', 'cert2.txt') }}"
+        gateway_ip_configurations:
+          - subnet:
+              id: "{{ subnet_output.state.id }}"
+            name: mattermost_ag_ip_configuration
+        frontend_ip_configurations:
+          - public_ip_address: "{{ vm_name }}-mattermost-ag-pip-{{ rnum }}"
+            name: mattermost_ag_front-end_ip_configuration
+        frontend_ports:
+          - port: 80
+            name: frontend_port_http
+        backend_address_pools:
+          - backend_addresses:
+            name: mattermost_ag_back-end_ip_address_pool
+        backend_http_settings_collection:
+          - port: 8065
+            protocol: http
+            cookie_based_affinity: enabled
+            name: mattermost_ag_back-end_http_configuration
+        http_listeners:
+          - frontend_ip_configuration: mattermost_ag_front-end_ip_configuration 
+            frontend_port: frontend_port_http
+            name: mattermost_ag_http_listener
+        request_routing_rules:
+          - rule_type: Basic
+            backend_address_pool: mattermost_ag_back-end_ip_address_pool
+            backend_http_settings: mattermost_ag_back-end_http_configuration
+            http_listener: mattermost_ag_http_listener
+            name: mattermost_ag_back-end_routing_table
+      register: output

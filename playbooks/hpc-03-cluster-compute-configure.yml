@@ -1,0 +1,209 @@
+- name: Determine Network Addresses of HPC Compute Nodes
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+
+    - name: Getting Public IP address of Compute Node 1
+      azure_rm_publicipaddress_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-hpc-compute1-pip-{{ rnum }}"
+      register: output1_pub
+
+    - name: Getting Private IP address of Compute Node 1
+      azure_rm_networkinterface_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-hpc-compute1-nic"
+      register: output1_priv
+
+    - name: Getting Public IP address of Compute Node 2
+      azure_rm_publicipaddress_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-hpc-compute2-pip-{{ rnum }}"
+      register: output2_pub
+
+    - name: Getting Private IP address of Compute Node 2
+      azure_rm_networkinterface_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-hpc-compute2-nic"
+      register: output2_priv
+
+    - name: Getting Public IP address of Compute Node 3
+      azure_rm_publicipaddress_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-hpc-compute3-pip-{{ rnum }}"
+      register: output3_pub
+
+    - name: Getting Private IP address of Compute Node 3
+      azure_rm_networkinterface_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-hpc-compute3-nic"
+      register: output3_priv
+
+    - name: Getting Public IP address of Master Node
+      azure_rm_publicipaddress_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-hpc-master-pip-{{ rnum }}"
+      register: output4_pub
+
+    - name: Getting Private IP address of Master Node
+      azure_rm_networkinterface_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-hpc-master-nic"
+      register: output4_priv
+
+    - name: Adding Public IP of Compute Node 1 to Ansible host group
+      add_host:
+        hostname: "{{ output1_pub.ansible_facts.azure_publicipaddresses[0].properties.ipAddress }}"
+        groups: computenodes
+
+    - name: Adding Public IP of Compute Node 2 to Ansible host group
+      add_host:
+        hostname: "{{ output2_pub.ansible_facts.azure_publicipaddresses[0].properties.ipAddress }}"
+        groups: computenodes
+
+    - name: Adding Public IP of Compute Node 3 to Ansible host group
+      add_host:
+        hostname: "{{ output3_pub.ansible_facts.azure_publicipaddresses[0].properties.ipAddress }}"
+        groups: computenodes
+
+    - name: Adding Public IP of Master node to Ansible host group
+      add_host:
+        hostname: "{{ output4_pub.ansible_facts.azure_publicipaddresses[0].properties.ipAddress }}"
+        groups: masternode
+
+    - name: Setting Private IP variable of Compute Node 1
+      set_fact:
+        node1_priv: "{{ output1_priv.ansible_facts.azure_networkinterfaces[0].properties.ipConfigurations[0].properties.privateIPAddress }}"
+
+    - name: Setting Private IP variable of Compute Node 2
+      set_fact:
+        node2_priv: "{{ output2_priv.ansible_facts.azure_networkinterfaces[0].properties.ipConfigurations[0].properties.privateIPAddress }}"
+
+    - name: Setting Private IP variable of Compute Node 3
+      set_fact:
+        node3_priv: "{{ output3_priv.ansible_facts.azure_networkinterfaces[0].properties.ipConfigurations[0].properties.privateIPAddress }}"
+
+    - name: Setting Private IP variable of Master Node
+      set_fact:
+        masternode_ip: "{{ output4_priv.ansible_facts.azure_networkinterfaces[0].properties.ipConfigurations[0].properties.privateIPAddress }}"
+
+- name: Configure HPC Compute Nodes
+  hosts: computenodes
+  remote_user: "{{ admin_username }}"
+  become: yes  
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+ 
+    - name: Ensure deltarpm package is installed
+      yum:
+        name: deltarpm
+        state: latest
+
+    - name: Install the EPEL repository
+      yum:
+        name: epel-release
+        state: latest
+
+    - name: Ensure required RPM packages are installed
+      yum: 
+        name:
+          - nfs-utils
+          - psmisc
+          - gcc
+          - gcc-gfortran
+          - gcc-c++
+          - git
+          - automake
+          - bonnie++
+          - glusterfs-libs
+          - glusterfs
+          - glusterfs-client-xlators
+          - glusterfs-fuse 
+          - libsemanage-python
+          - libsemanage-devel
+          - policycoreutils-python
+
+# Removed because A8 and H series do not support SR-IOV with Mellanox adapter
+#          - rdma
+#          - mstflint
+#          - qpid-cpp-server
+#          - qpid-cpp-server-rdma
+#          - qpid-cpp-client
+#          - qpid-cpp-client-devel
+#          - libibverbs-utils
+#          - infiniband-diags
+#          - numactl
+
+    - name: Set use_nfs_home_dirs SELinux flag on and keep it persistent across reboots
+      seboolean:
+        name: use_nfs_home_dirs
+        state: yes
+        persistent: yes
+
+    - name: Mounting /share/data and creating required /etc/fstab entry
+      mount:
+        path: "/share/data"
+        src: "{{ hostvars['localhost']['masternode_ip'] }}:/share/data"
+        fstype: "nfs"
+        opts: "defaults,nofail"
+        state: "mounted"
+
+    - name: Mounting /share/home and creating required /etc/fstab entry
+      mount:
+        path: "/share/home"
+        src: "{{ hostvars['localhost']['masternode_ip'] }}:/share/home"
+        fstype: "nfs"
+        opts: "defaults,nofail"
+        state: "mounted"
+
+    - name: Creating hpc group
+      group:
+        name: hpc
+        state: present
+        gid: 7007
+
+    - name: Creating hpc user
+      user:
+        name: "hpcuser"
+        comment: "hpc user account"
+        uid: "7007"
+        groups: "hpc"
+        shell: "/bin/bash"
+        home: "/share/home"
+
+    - name: Allow hpc group to have passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%hpc'
+        line: '%hpc ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+
+- name: Configure MPIO using master node
+  hosts: masternode
+  remote_user: "{{ admin_username }}"
+  become: yes
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+
+    - name: Create /shared/home/hosts file for MPIO test
+      lineinfile:
+        dest: /share/home/hosts
+        owner: hpcuser
+        mode: 0644
+        group: hpcuser
+        state: present
+        create: yes
+        line:  "{{ item }}"
+      with_items:
+        - "{{ hostvars['localhost']['node1_priv'] }}"
+        - "{{ hostvars['localhost']['node2_priv'] }}"
+        - "{{ hostvars['localhost']['node3_priv'] }}"

@@ -1,0 +1,54 @@
+- name: Create CosmosDB to modernize TODO Application
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+  roles:
+    - ../modules
+
+  tasks:
+
+    - name: Create Cosmos DB (MongoDB) for Red Hat Summit Labs
+      azure_rm_cosmosdbaccount:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-cosmosdb"
+        kind: mongo_db
+        state: present
+        enable_aggregation_pipeline: true
+        enable_multiple_write_locations: false
+        consistency_policy:
+          default_consistency_level: "consistent_prefix"
+        geo_rep_locations:
+          - name: "{{ location }}"
+            failover_priority: 0
+        database_account_offer_type: Standard
+
+    - name: Obtain CosmosDB Facts
+      azure_rm_cosmosdbaccount_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-cosmosdb"
+        retrieve_keys: all
+        retrieve_connection_strings: yes
+      register: facts_output
+
+    - name: Getting CosmosDB Username
+      set_fact:
+        username: "{{ facts_output.accounts[0].name }}"
+
+    - name: Getting CosmosDB Connection String
+      set_fact:
+        constr: "{{ facts_output.accounts[0].connection_strings.connection_strings[0].connection_string }}"
+
+    - name: Getting CosmosDB Primary Master Key
+      set_fact:
+        primarykey: "{{ facts_output.accounts[0].primary_master_key }}"
+
+    - debug:
+        msg: "CosmosDB Username: {{ username }}"
+
+    - debug:
+        msg: "CosmosDB Connection String: {{ constr }}"
+
+    - debug:
+        msg: "CosmosDB Primary Master Key: {{ primarykey }}"
+

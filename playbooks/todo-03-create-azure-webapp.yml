@@ -1,0 +1,46 @@
+- name: Create Azure Webapp for TODO Application
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+  roles:
+    - ../modules
+
+  tasks:
+
+    - name: Obtain Azure Container Registry Facts
+      azure_rm_containerregistry_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}{{ rnum }}acr"
+        retrieve_credentials: true
+      register: acr_output
+
+    - name: Obtain Cosmos DB Facts
+      azure_rm_cosmosdbaccount_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-cosmosdb"
+        retrieve_keys: all
+        retrieve_connection_strings: yes
+      register: cosmos_output
+
+    - name: Create Azure Web App for TODO Application utilizing container pushed to Azure Container Registry
+      azure_rm_webapp:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-todo-webapp"
+        plan: "{{ vm_name }}-appservice-plan"
+        app_settings:
+          MONGO_DBCONNECTION: "{{ cosmos_output.accounts[0].connection_strings.connection_strings[0].connection_string }}"
+        container_settings:
+          name: ossdemo/nodejs-todo
+          registry_server_url: "{{ acr_output.registries[0].login_server }}"
+          registry_server_user: "{{ acr_output.registries[0].name }}"
+          registry_server_password: "{{ acr_output.registries[0].credentials.password }}"
+
+    - name: Obtain Azure Web App Facts
+      azure_rm_webapp_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}-todo-webapp"
+      register: webapp_output
+
+    - debug:
+        msg: "Your PaaS based Azure Web App URL is: http://{{ webapp_output.webapps[0].default_host_name }} -- Please allow approximately 5 minutes for the app to come up before visiting this URL."

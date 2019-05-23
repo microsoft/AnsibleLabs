@@ -1,0 +1,47 @@
+- name: Create function app with Ansible in Docker container
+  hosts: localhost
+  connection: local
+  vars_files:
+   - ./vars-myvars.yml
+
+  tasks:
+
+    - name: Create an Azure App Service Plan
+      azure_rm_appserviceplan:
+        name: "{{ vm_name }}-appservice-plan"
+        is_linux: true
+        number_of_workers: 1
+        resource_group: "{{ resource_group }}"
+        sku: S1
+
+    - name: Create a Storage Account for Azure Function
+      azure_rm_storageaccount:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name | lower }}2019func"
+        kind: StorageV2
+        account_type: Standard_LRS
+        tags:
+          Tier: Development
+          Venue: RedHatSummit
+      register: output
+
+    - name: Obtain Azure Container Registry Facts
+      azure_rm_containerregistry_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}{{ rnum }}acr"
+        retrieve_credentials: true
+      register: acr_output
+
+    - name: Create container based function app
+      azure_rm_functionapp:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vm_name }}functionapp"
+        storage_account: "{{ vm_name | lower }}2019func"
+        plan:
+          resource_group: "{{ resource_group }}"
+          name: "{{ vm_name }}-appservice-plan"
+        container_settings:
+          name: functionapp
+          registry_server_url: "{{ acr_output.registries[0].login_server }}"
+          registry_server_user: "{{ acr_output.registries[0].name }}"
+          registry_server_password: "{{ acr_output.registries[0].credentials.password }}"

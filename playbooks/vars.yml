@@ -1,0 +1,38 @@
+---
+# Multiple Playbooks
+# CHANGE THE VALUES OF THESE AS APPROPRIATE FOR YOU
+#
+# The resource group you have been assigned - get this with "az group list"
+resource_group: MY_RESOURCE_GROUP
+
+# The prefix that you would like to use for all of your Azure assets.  We recommend "firstnamelastname" NOTE: PLEASE USE ONLY [a-z][0-9] and no more than 15 characters!!!!!!
+vm_name: MYVM
+
+# The location of the Azure Data Center you are in. This is probably "eastus" or "northcentralus" -- Look at your VNC FQDN at the top of the screen
+location: MYAZUREDATACENTER
+
+# Function App Exercise
+github_id: MYGITHUBID
+github_token: MYGITHUBPERSONALACCESSTOKEN
+
+###########################################
+# DO NOT CHANGE ANYTHING BELOW THIS POINT
+###########################################
+
+# The admin username that you would like to use for all of your VM assets. You will likely not need to connect to them.
+admin_username: student
+
+# Random Generated Number
+rnum: RANDOM
+
+# Complex Password
+admin_password: MuABCPassword!!@123
+
+# Create Azure Managed MySQL Database (PaaS) Exercise 
+mysql_username: mmuser
+mysql_password: Testpasswordxyz12!
+mysql_database_name: mattermost
+
+# HPC Lab Exercise
+hp_infra_size: Standard_D4s_v3
+hp_compute_size: Standard_A8

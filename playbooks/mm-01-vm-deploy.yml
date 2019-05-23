@@ -1,0 +1,80 @@
+- name: Deploy Mattermost Infrastructure Virtual Machines
+  hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars-myvars.yml
+
+  tasks:
+  - name: Create Mattermost VNet
+    azure_rm_virtualnetwork:
+      resource_group: '{{ resource_group }}'
+      name: "{{ vm_name }}-mattermost-vnet"
+      address_prefixes: "10.10.0.0/16"
+
+  - name: Create Mattermost Subnet
+    azure_rm_subnet:
+      resource_group: '{{ resource_group }}'
+      name: "{{ vm_name }}-mattermost-subnet"
+      address_prefix: "10.10.50.0/24"
+      virtual_network: "{{ vm_name }}-mattermost-vnet"
+
+  - name: Create Mattermost Server & Proxy VM Public IP Address
+    azure_rm_publicipaddress:
+      resource_group: '{{ resource_group }}'
+      name: "{{ vm_name }}-mattermost-master-pip-{{ rnum }}"
+      allocation_method: Static
+      domain_name: '{{ vm_name }}-mattermost-{{ rnum }}'
+
+  - name: Create Mattermost Server & Proxy NSG
+    azure_rm_securitygroup:
+      resource_group: '{{ resource_group }}'
+      name: '{{ vm_name }}-mattermost-nsg'
+      rules:
+          - name: 'AllowMatterMost'
+            access: Allow
+            destination_port_range: 8065
+            direction: Inbound
+            priority: 1010
+            protocol: Tcp
+          - name: 'AllowSSH'
+            access: Allow
+            destination_port_range: 22
+            direction: Inbound
+            priority: 1011
+            protocol: Tcp
+
+  - name: Create Mattermost Server & Proxy VM NIC
+    azure_rm_networkinterface:
+      name: "{{ vm_name }}-mattermost-master-nic"
+      os_type: Linux
+      resource_group: '{{ resource_group }}'
+      security_group_name: '{{ vm_name }}-mattermost-nsg'
+      subnet_name: "{{ vm_name }}-mattermost-subnet"
+      virtual_network_name: "{{ vm_name }}-mattermost-vnet"
+      ip_configurations:
+        - name: ipconfig1
+          primary: True
+          public_ip_address_name: "{{ vm_name }}-mattermost-master-pip-{{ rnum }}"
+          public_ip_allocation_method: Dynamic
+          private_ip_allocation_method: Dynamic
+
+
+  - name: Create Mattermost Server & Proxy VM
+    azure_rm_virtualmachine:
+      admin_username: "{{ admin_username }}"
+      managed_disk_type: Standard_LRS
+      name: '{{ vm_name }}-mattermost-master'
+      network_interface_names: "{{ vm_name }}-mattermost-master-nic"
+      os_type: Linux
+      resource_group: '{{ resource_group }}'
+      short_hostname: '{{ vm_name }}'
+      vm_size: Standard_DS3_v2
+      ssh_password_enabled: false
+      ssh_public_keys:
+        - path: /home/{{ admin_username }}/.ssh/authorized_keys
+          key_data: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      image:
+        offer: RHEL
+        publisher: RedHat
+        sku: '7-LVM'
+        version: 7.6.2018103108
