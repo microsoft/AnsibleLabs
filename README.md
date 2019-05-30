@@ -4,9 +4,6 @@ This is a content of Ansible Labs used in RedHat Summit 2019.
 We are currently adjusting the content to be usable in any Ansible environment.
 
 # Deploy and scale Microsoft Azure infrastructures and applications with Red Hat Ansible Automation
-<p align="center">
-<img src="images/maxresdefault.jpg">
-</p>
 This repository contains practical exercises for the Red Hat Summit 2019 Instructor-Led-Lab (ILL)<BR>
 <b>Deploy and scale Microsoft Azure infrastructures and applications with Red Hat Ansible Automation.</b>
 <HR>
