@@ -78,7 +78,7 @@ class AzureRMManagementGroupSubscriptions(AzureRMModuleBaseExt):
                 type='str',
                 updatable=False,
                 disposition='groupId',
-                required=true
+                required=True
             ),
             state=dict(
                 type='str',
@@ -127,7 +127,7 @@ class AzureRMManagementGroupSubscriptions(AzureRMModuleBaseExt):
                     '/{{ management_group_name }}' +
                     '/subscriptions' +
                     '/{{ subscription_id }}')
-        self.url = self.url.replace('{{ management_group_name }}', self.management_group_name)
+        self.url = self.url.replace('{{ management_group_name }}', self.group_id)
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
 
         old_response = self.get_resource()
