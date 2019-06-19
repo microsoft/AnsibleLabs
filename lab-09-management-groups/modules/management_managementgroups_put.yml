@@ -1,28 +1,25 @@
-# ref##id##/providers/Microsoft.Management/managementGroups/ChildGroup
-# ref##id##/providers/Microsoft.Management/managementGroups/RootGroup
-- import_playbook: resourcegroups_put.yml
-
-
+---
 - hosts: localhost
-  roles:
-    - ../modules
   vars_files:
     - _vars.yml
-  vars:
-    management_group_name: myManagementGroup
   tasks:
-
     - name: PutManagementGroup
       azure_rm_managementgroup:
-        group_id: '{{management_group_name}}'
-        create_management_group_request:
-          id: /providers/Microsoft.Management/managementGroups/ChildGroup
-          type: /providers/Microsoft.Management/managementGroups
-          name: ChildGroup
-          properties:
-            tenantId: 20000000-0000-0000-0000-000000000000
-            displayName: ChildGroup
-            details:
-              parent:
-                id: /providers/Microsoft.Management/managementGroups/RootGroup
+        group_id: ChildGroup
+        id: /providers/Microsoft.Management/managementGroups/ChildGroup
+        type: /providers/Microsoft.Management/managementGroups
+        name: ChildGroup
+        properties:
+          tenantId: '{{tenant_id}}'
+          display_name: ChildGroup
+          details:
+            parent:
+              id: /providers/Microsoft.Management/managementGroups/RootGroup
+    - name: PatchManagementGroup
+      azure_rm_managementgroup:
+        group_id: ChildGroup
+    - name: DeleteManagementGroup
+      azure_rm_managementgroup:
+        group_id: ChildGroup
+        state: absent
     
