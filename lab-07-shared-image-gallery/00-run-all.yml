@@ -235,6 +235,9 @@
         that: 
           - output.changed
 
+    - debug:
+        var: output
+
     # do  not test delete at the moment as it will fail due to mysterious nested resource
     # deleting resource group will delete all the resources
 
