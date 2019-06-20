@@ -25,142 +25,11 @@ options:
     description:
       - Management Group ID.
     required: true
-  create_management_group_request:
-    description:
-      - Management group creation parameters.
-    required: true
   name:
     description:
       - >-
         The name of the management group. For example,
         00000000-0000-0000-0000-000000000000
-  display_name:
-    description:
-      - >-
-        The friendly name of the management group. If no value is passed then
-        this  field will be set to the groupId.
-  details:
-    description:
-      - undefined
-    suboptions:
-      parent:
-        description:
-          - undefined
-        suboptions:
-          id:
-            description:
-              - >-
-                The fully qualified ID for the parent management group.  For
-                example,
-                /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000
-          name:
-            description:
-              - The name of the parent management group
-          display_name:
-            description:
-              - The friendly name of the parent management group.
-      version:
-        description:
-          - The version number of the object.
-      updated_time:
-        description:
-          - The date and time when this object was last updated.
-      updated_by:
-        description:
-          - The identity of the principal or process that updated the object.
-  tenant_id:
-    description:
-      - >-
-        The AAD Tenant ID associated with the management group. For example,
-        00000000-0000-0000-0000-000000000000
-  roles:
-    description:
-      - The role definitions associated with the management group.
-    type: list
-  children:
-    description:
-      - The list of children.
-    type: list
-    suboptions:
-      type:
-        description:
-          - >-
-            The fully qualified resource type which includes provider namespace
-            (e.g. /providers/Microsoft.Management/managementGroups)
-      id:
-        description:
-          - >-
-            The fully qualified ID for the child resource (management group or
-            subscription).  For example,
-            /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000
-      name:
-        description:
-          - The name of the child entity.
-      display_name:
-        description:
-          - The friendly name of the child resource.
-      roles:
-        description:
-          - The roles definitions associated with the management group.
-        type: list
-      children:
-        description:
-          - The list of children.
-        type: list
-        suboptions:
-          type:
-            description:
-              - >-
-                The fully qualified resource type which includes provider
-                namespace (e.g.
-                /providers/Microsoft.Management/managementGroups)
-          id:
-            description:
-              - >-
-                The fully qualified ID for the child resource (management group
-                or subscription).  For example,
-                /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000
-          name:
-            description:
-              - The name of the child entity.
-          display_name:
-            description:
-              - The friendly name of the child resource.
-          roles:
-            description:
-              - The roles definitions associated with the management group.
-            type: list
-          children:
-            description:
-              - The list of children.
-            type: list
-            suboptions:
-              type:
-                description:
-                  - >-
-                    The fully qualified resource type which includes provider
-                    namespace (e.g.
-                    /providers/Microsoft.Management/managementGroups)
-              id:
-                description:
-                  - >-
-                    The fully qualified ID for the child resource (management
-                    group or subscription).  For example,
-                    /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000
-              name:
-                description:
-                  - The name of the child entity.
-              display_name:
-                description:
-                  - The friendly name of the child resource.
-              roles:
-                description:
-                  - The roles definitions associated with the management group.
-                type: list
-              children:
-                description:
-                  - The list of children.
-                type: list
   id:
     description:
       - >-
@@ -171,6 +40,69 @@ options:
       - >-
         The type of the resource.  For example,
         /providers/Microsoft.Management/managementGroups
+  properties:
+    description:
+      - The properties of the management group. 
+    returned: always
+    type: dict
+    contains:
+      tenant_id:
+        description:
+          - >-
+            The AAD Tenant ID associated with the management group. For example,
+            00000000-0000-0000-0000-000000000000
+        returned: always
+        type: str
+      display_name:
+        description:
+          - The friendly name of the management group.
+        returned: always
+        type: str
+      details:
+        description:
+          - The details of the management group.
+        returned: always
+        type: dict
+        contains:
+          version:
+            description:
+              - The version number of the object.
+            returned: always
+            type: number
+          updated_time:
+            description:
+              - The date and time when this object was last updated.
+            returned: always
+            type: datetime
+          updated_by:
+            description:
+              - The identity of the principal or process that updated the object.
+            returned: always
+            type: str
+          parent:
+            description:
+              - The parent of the management group.
+            returned: always
+            type: dict
+            contains:
+              id:
+                description:
+                  - >-
+                    The fully qualified ID for the parent management group.  For
+                    example,
+                    /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000
+                returned: always
+                type: str
+              name:
+                description:
+                  - The name of the parent management group
+                returned: always
+                type: str
+              display_name:
+                description:
+                  - The friendly name of the parent management group.
+                returned: always
+                type: str
   state:
     description:
       - Assert the state of the ManagementGroup.
@@ -191,23 +123,22 @@ author:
 EXAMPLES = '''
 - name: PutManagementGroup
   azure_rm_managementgroup:
-    group_id: myManagementGroup
-    create_management_group_request:
-      id: /providers/Microsoft.Management/managementGroups/ChildGroup
-      type: /providers/Microsoft.Management/managementGroups
-      name: ChildGroup
-      properties:
-        tenantId: 20000000-0000-0000-0000-000000000000
-        displayName: ChildGroup
-        details:
-          parent:
-            id: /providers/Microsoft.Management/managementGroups/RootGroup
+    group_id: ChildGroup
+    id: /providers/Microsoft.Management/managementGroups/ChildGroup
+    type: /providers/Microsoft.Management/managementGroups/
+    name: ChildGroup
+    properties:
+      tenantId: 20000000-0000-0000-0000-000000000000
+      display_name: ChildGroup
+      details:
+        parent:
+        id: /providers/Microsoft.Management/managementGroups/RootGroup
 - name: PatchManagementGroup
   azure_rm_managementgroup:
-    group_id: myManagementGroup
+    group_id: ChildGroup
 - name: DeleteManagementGroup
   azure_rm_managementgroup:
-    group_id: myManagementGroup
+    group_id: ChildGroup
     state: absent
 
 '''
@@ -220,7 +151,6 @@ id:
       /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000
   returned: always
   type: str
-  sample: null
 type:
   description:
     - >-
@@ -228,7 +158,6 @@ type:
       /providers/Microsoft.Management/managementGroups
   returned: always
   type: str
-  sample: null
 name:
   description:
     - >-
@@ -236,13 +165,11 @@ name:
       00000000-0000-0000-0000-000000000000
   returned: always
   type: str
-  sample: null
 properties:
   description:
-    - !<tag:yaml.org,2002:js/undefined> ''
+    - The properties of the management group. 
   returned: always
   type: dict
-  sample: null
   contains:
     tenant_id:
       description:
@@ -251,50 +178,42 @@ properties:
           00000000-0000-0000-0000-000000000000
       returned: always
       type: str
-      sample: null
     display_name:
       description:
         - The friendly name of the management group.
       returned: always
       type: str
-      sample: null
     roles:
       description:
         - The role definitions associated with the management group.
       returned: always
       type: str
-      sample: null
     details:
       description:
-        - !<tag:yaml.org,2002:js/undefined> ''
+        - The details of the management group. 
       returned: always
       type: dict
-      sample: null
       contains:
         version:
           description:
             - The version number of the object.
           returned: always
           type: number
-          sample: null
         updated_time:
           description:
             - The date and time when this object was last updated.
           returned: always
           type: datetime
-          sample: null
         updated_by:
           description:
             - The identity of the principal or process that updated the object.
           returned: always
           type: str
-          sample: null
         parent:
           description:
-            - !<tag:yaml.org,2002:js/undefined> ''
+            - The paresnt of the management group. 
           returned: always
           type: dict
-          sample: null
           contains:
             id:
               description:
@@ -304,25 +223,21 @@ properties:
                   /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000
               returned: always
               type: str
-              sample: null
             name:
               description:
                 - The name of the parent management group
               returned: always
               type: str
-              sample: null
             display_name:
               description:
                 - The friendly name of the parent management group.
               returned: always
               type: str
-              sample: null
     children:
       description:
         - The list of children.
       returned: always
       type: dict
-      sample: null
       contains:
         type:
           description:
@@ -331,7 +246,6 @@ properties:
               namespace (e.g. /providers/Microsoft.Management/managementGroups)
           returned: always
           type: str
-          sample: null
         id:
           description:
             - >-
@@ -340,119 +254,16 @@ properties:
               /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000
           returned: always
           type: str
-          sample: null
         name:
           description:
             - The name of the child entity.
           returned: always
           type: str
-          sample: null
         display_name:
           description:
             - The friendly name of the child resource.
           returned: always
           type: str
-          sample: null
-        roles:
-          description:
-            - The roles definitions associated with the management group.
-          returned: always
-          type: str
-          sample: null
-        children:
-          description:
-            - The list of children.
-          returned: always
-          type: dict
-          sample: null
-          contains:
-            type:
-              description:
-                - >-
-                  The fully qualified resource type which includes provider
-                  namespace (e.g.
-                  /providers/Microsoft.Management/managementGroups)
-              returned: always
-              type: str
-              sample: null
-            id:
-              description:
-                - >-
-                  The fully qualified ID for the child resource (management
-                  group or subscription).  For example,
-                  /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000
-              returned: always
-              type: str
-              sample: null
-            name:
-              description:
-                - The name of the child entity.
-              returned: always
-              type: str
-              sample: null
-            display_name:
-              description:
-                - The friendly name of the child resource.
-              returned: always
-              type: str
-              sample: null
-            roles:
-              description:
-                - The roles definitions associated with the management group.
-              returned: always
-              type: str
-              sample: null
-            children:
-              description:
-                - The list of children.
-              returned: always
-              type: dict
-              sample: null
-              contains:
-                type:
-                  description:
-                    - >-
-                      The fully qualified resource type which includes provider
-                      namespace (e.g.
-                      /providers/Microsoft.Management/managementGroups)
-                  returned: always
-                  type: str
-                  sample: null
-                id:
-                  description:
-                    - >-
-                      The fully qualified ID for the child resource (management
-                      group or subscription).  For example,
-                      /providers/Microsoft.Management/managementGroups/0000000-0000-0000-0000-000000000000
-                  returned: always
-                  type: str
-                  sample: null
-                name:
-                  description:
-                    - The name of the child entity.
-                  returned: always
-                  type: str
-                  sample: null
-                display_name:
-                  description:
-                    - The friendly name of the child resource.
-                  returned: always
-                  type: str
-                  sample: null
-                roles:
-                  description:
-                    - >-
-                      The roles definitions associated with the management
-                      group.
-                  returned: always
-                  type: str
-                  sample: null
-                children:
-                  description:
-                    - The list of children.
-                  returned: always
-                  type: dict
-                  sample: null
 
 '''
 
@@ -472,59 +283,39 @@ class Actions:
 class AzureRMManagementGroups(AzureRMModuleBaseExt):
     def __init__(self):
         self.module_arg_spec = dict(
-            group_id=dict(
-                type='str',
-                updatable=False,
-                disposition='groupId',
-                required=true
-            ),
-            create_management_group_request=dict(
+          group_id=dict(type='str',updatable=False,required=True),
+          name=dict(type='str',updatable=False),
+          id=dict(type='str'),
+          type=dict(type='str'),
+          properties=dict(
+            type='dict',
+            options=dict(
+              tenantId=dict(type='str'),
+              display_name=dict(type='str'),
+              details=dict(
                 type='dict',
-                disposition='createManagementGroupRequest',
-                required=true
-            ),
-            name=dict(
-                type='str',
-                updatable=False,
-                disposition='/'
-            ),
-            display_name=dict(
-                type='str',
-                disposition='/properties/displayName'
-            ),
-            details=dict(
-                type='dict',
-                disposition='/properties/*',
                 options=dict(
-                    parent=dict(
-                        type='dict',
-                        options=dict(
-                            id=dict(
-                                type='str'
-                            )
-                        )
+                  parent=dict(
+                    type='dict',
+                    options=dict(
+                      id=dict(type='str')
                     )
+                  )
                 )
-            ),
-            state=dict(
-                type='str',
-                default='present',
-                choices=['present', 'absent']
+              )
             )
+          ),
+          state=dict(type='str', default='present', choices=['present', 'absent']),  
         )
 
         self.group_id = None
-        self.create_management_group_request = None
-        self.id = None
-        self.type = None
+        self.state = None
 
         self.results = dict(changed=False)
         self.mgmt_client = None
-        self.state = None
         self.url = None
         self.status_code = [200, 201, 202]
         self.to_do = Actions.NoAction
-
         self.body = {}
         self.query_parameters = {}
         self.query_parameters['api-version'] = '2018-03-01-preview'
@@ -554,7 +345,7 @@ class AzureRMManagementGroups(AzureRMModuleBaseExt):
                     '/Microsoft.Management' +
                     '/managementGroups' +
                     '/{{ management_group_name }}')
-        self.url = self.url.replace('{{ management_group_name }}', self.name)
+        self.url = self.url.replace('{{ management_group_name }}', self.group_id)
 
         old_response = self.get_resource()
 

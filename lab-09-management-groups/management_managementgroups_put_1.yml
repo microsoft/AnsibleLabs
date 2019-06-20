@@ -7,7 +7,7 @@
   vars_files:
     - _vars.yml
   vars:
-    management_group_name: myManagementGroup
+    management_group_name: ChildGroup
   tasks:
 
     - name: AddSubscriptionToManagementGroup
