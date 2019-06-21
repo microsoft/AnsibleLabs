@@ -1,0 +1,15 @@
+- hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars.yml
+  roles:
+    - ./modules
+
+  tasks:
+    - name: Create shared image gallery
+      azure_rm_gallery:
+        resource_group: "{{ resource_group }}"
+        name: "{{ shared_gallery_name }}"
+        location: "{{ location }}"
+        description: This is the gallery description.
+      register: output
