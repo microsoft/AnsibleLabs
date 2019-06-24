@@ -84,21 +84,21 @@ Virtual Network Inteface Cards Creation Task:
     ansible-playbook 01-create-shared-image-gallery.yml
     Shared Image Gallery Creation Task:
     In this task, we will use the azure_rm_gallery module to create a shared image gallery. 
-    ```
+```
     - name: Create shared image gallery
       azure_rm_gallery:
         resource_group: "{{ resource_group }}"
         name: "{{ shared_gallery_name }}"
         location: "{{ location }}"
         description: This is the gallery description.
-    ```
+```
     Once again, visit the Azure Portal(https://portol.azure.com) and in your resource group you will see a new shared image gallery.
 
 ## Playbook 2 - Create Shared Image
     ansible-playbook 02-create-image.yml
     Shared Image Creation Task:
     In this task, we will use the azure_rm_galleryimage module to create a shared image in your gallery. 
-    ```
+```
     - name: Create shared image
       azure_rm_galleryimage:
         resource_group: "{{ resource_group }}"
@@ -112,10 +112,10 @@ Virtual Network Inteface Cards Creation Task:
           offer: myOfferName
           sku: mySkuName
         description: Image Description  
-    ```
+```
     Gallery Image Version Creation Task: 
     In this task, we will use the azure_rm_galleryimageversion module to create a simple gallery image version. 
-    ```
+```
     - name: Create or update a simple gallery Image Version
       azure_rm_galleryimageversion:
         resource_group: "{{ resource_group }}"
@@ -137,7 +137,7 @@ Virtual Network Inteface Cards Creation Task:
           managed_image:
             name: "{{ shared_image_name }}"
             resource_group: "{{ resource_group }}"
-    ```
+```
     After this playbook completes, you can visit the Azure Portal(https://portol.azure.com). Open your resource group, and you can find your shared image gallery. From the gallery you can see the shared image that you just created. There is the resource id of the shared image. Copy the resource id and add it to your vars.yml file as 'image_id'. 
 
 
@@ -145,7 +145,7 @@ Virtual Network Inteface Cards Creation Task:
     ansible-playbook 03-create-vm-using-shared-image.yml
     Virtual Machine Creation Task:
     In this task, we will use the azure_rm_virtualmachine module to create a virtual machine using the shared image that we create in the pervious tasks.
-    ```
+```
     azure_rm_virtualmachine:
       resource_group: "{{ resource_group }}"
       name: "{{ vm_name }}"
@@ -155,5 +155,5 @@ Virtual Network Inteface Cards Creation Task:
       managed_disk_type: Standard_LRS
       image:
         id: "{{ image_id }}"
-    ```
+```
     After this playbook competes, you can visit the Azure Portal(https://portol.azure.com) and find the newly-created virtual machine in your resource group.
