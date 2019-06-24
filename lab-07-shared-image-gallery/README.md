@@ -8,75 +8,76 @@ This Lab Exercise will assume that:
     You have added your Resource Group ID, Location, Source VM Name, Image Name, Shared Gallery Name, Shared Image Name, Shared Image Version and VM Name to the vars.yml file prior to executing this lab.
 
 ## Playbook 0 - Create Custom Image
+
     ansible-playbook 00-create-image.yml
     Resource Group Creation Task:
-    ```
-    - name: Create resource group if doesn't exist
-      azure_rm_resourcegroup:
-        name: "{{ resource_group }}"
-        location: "{{ location }}"
-    ```
+```
+- name: Create resource group if doesn't exist
+  azure_rm_resourcegroup:
+    name: "{{ resource_group }}"
+    location: "{{ location }}"
+```
     Virtual Network Creation Task:
-    ```
-    - name: Create virtual network
-      azure_rm_virtualnetwork:
-        resource_group: "{{ resource_group }}"
-        name: "{{ virtual_network_name }}"
-        address_prefixes: "10.0.0.0/16"
-    - name: Add subnet
-      azure_rm_subnet:
-        resource_group: "{{ resource_group }}"
-        name: "{{ subnet_name }}"
-        address_prefix: "10.0.1.0/24"
-        virtual_network: "{{ virtual_network_name }}"
-    ```
+```
+- name: Create virtual network
+  azure_rm_virtualnetwork:
+    resource_group: "{{ resource_group }}"
+    name: "{{ virtual_network_name }}"
+    address_prefixes: "10.0.0.0/16"
+- name: Add subnet
+  azure_rm_subnet:
+    resource_group: "{{ resource_group }}"
+    name: "{{ subnet_name }}"
+    address_prefix: "10.0.1.0/24"
+    virtual_network: "{{ virtual_network_name }}"
+```
     Public IP Address Creation Task:
-    ```
-    - name: Create public IP address
-      azure_rm_publicipaddress:
-        resource_group: "{{ resource_group }}"
-        allocation_method: Static
-        name: "{{ ip_name }}"
-    ```
-    Virtual Network Inteface Cards Creation Task:
-    ```
-    - name: Create virtual network inteface cards for VM A and B
-      azure_rm_networkinterface:
-        resource_group: "{{ resource_group }}"
-        name: "{{ network_interface_name }}"
-        virtual_network: "{{ virtual_network_name }}"
-        subnet: "{{ subnet_name }}"
-    ```
+```
+- name: Create public IP address
+  azure_rm_publicipaddress:
+    resource_group: "{{ resource_group }}"
+    allocation_method: Static
+    name: "{{ ip_name }}"
+```
+Virtual Network Inteface Cards Creation Task:
+```
+- name: Create virtual network inteface cards for VM A and B
+  azure_rm_networkinterface:
+    resource_group: "{{ resource_group }}"
+    name: "{{ network_interface_name }}"
+    virtual_network: "{{ virtual_network_name }}"
+    subnet: "{{ subnet_name }}"
+```
     Virtual Machine Creation Task:
-    ```
-    - name: Create VM
-      azure_rm_virtualmachine:
-        resource_group: "{{ resource_group }}"
-        name: "{{ source_vm_name }}"
-        admin_username: testuser
-        admin_password: "Password1234!"
-        vm_size: Standard_B1ms
-        network_interfaces: "{{ network_interface_name }}"
-        image:
-          offer: UbuntuServer
-          publisher: Canonical
-          sku: 16.04-LTS
-          version: latest
-    - name: Generalize VM
-      azure_rm_virtualmachine:
-        resource_group: "{{ resource_group }}"
-        name: "{{ source_vm_name }}"
-        generalized: yes
-    ```
+```
+- name: Create VM
+  azure_rm_virtualmachine:
+    resource_group: "{{ resource_group }}"
+    name: "{{ source_vm_name }}"
+    admin_username: testuser
+    admin_password: "Password1234!"
+    vm_size: Standard_B1ms
+    network_interfaces: "{{ network_interface_name }}"
+    image:
+      offer: UbuntuServer
+      publisher: Canonical
+      sku: 16.04-LTS
+      version: latest
+- name: Generalize VM
+  azure_rm_virtualmachine:
+    resource_group: "{{ resource_group }}"
+    name: "{{ source_vm_name }}"
+    generalized: yes
+```
     Custom Image Creation Task:
     In this task. we will use the azure_rm_image module. 
-    ```
-    - name: Create custom image
-      azure_rm_image:
-        resource_group: "{{ resource_group }}"
-        name: "{{ image_name }}"
-        source: "{{ source_vm_name }}"
-    ```
+```
+- name: Create custom image
+  azure_rm_image:
+    resource_group: "{{ resource_group }}"
+    name: "{{ image_name }}"
+    source: "{{ source_vm_name }}"
+```
     After this playbook completes, you can visit the Azure Portal(https://portol.azure.com) and find the custom image in your resource group.
 
 ## Playbook 1 - Create Shared Image Gallery
