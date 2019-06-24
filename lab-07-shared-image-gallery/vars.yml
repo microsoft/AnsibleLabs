@@ -1,6 +1,10 @@
 resource_group: myResourceGroup
 location: westus
+virtual_network_name: testVnet
+subnet_name: testSubnet
+ip_name: testPublicIP
 source_vm_name: vmforimagepfxxyz
+network_interface_name: vmforimagepfxxyznic
 image_name: testimagea
 shared_gallery_name: myGallerypfxxyz
 shared_image_name: myImage
