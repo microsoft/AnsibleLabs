@@ -39,5 +39,9 @@
               regional_replica_count: 2
               storage_account_type: Standard_ZRS
           managed_image:
-            name: "{{ shared_image_name }}"
+            name: "{{ image_name }}"
             resource_group: "{{ resource_group }}"
+      register: output
+
+    - debug:
+        var: output
