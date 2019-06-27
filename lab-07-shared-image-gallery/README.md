@@ -181,7 +181,7 @@ Virtual Network Inteface Cards Creation Task:
 ```
     After this playbook competes, you can visit the Azure Portal(https://portol.azure.com) and find the newly-created virtual machine scale set in your resource group.
 
-## Playbook 3 - Delete Gallery
+## Playbook 5 - Delete Gallery
     ansible-playbook 05-delete-gallery
     Gallery Image Version Deletion Task:
 ```
