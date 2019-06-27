@@ -157,3 +157,57 @@ Virtual Network Inteface Cards Creation Task:
         id: "{{ image_id }}"
 ```
     After this playbook competes, you can visit the Azure Portal(https://portol.azure.com) and find the newly-created virtual machine in your resource group.
+
+
+
+## Playbook 4 - Create Virtual Machine Scale Set Using Shared Image
+    ansible-playbook 04-create-vmss-using-shared-image
+    Virtual Machine Scale Set Creation Task:
+```
+  - name: Create VMSS using shared image
+    azure_rm_virtualmachinescaleset:
+      resource_group: "{{ resource_group }}"
+      name: "{{ vmss_name }}"
+      vm_size: Standard_DS1_v2
+      capacity: 2
+      virtual_network_name: "{{ virtual_network_name }}"
+      upgrade_policy: Manual
+      subnet_name: "{{ subnet_name }}"
+      admin_username: adminUser
+      admin_password: PassWord01
+      managed_disk_type: Standard_LRS
+      image:
+        id: "{{ image_id }}"
+```
+    After this playbook competes, you can visit the Azure Portal(https://portol.azure.com) and find the newly-created virtual machine scale set in your resource group.
+
+## Playbook 5 - Delete Gallery
+    ansible-playbook 05-delete-gallery
+    Gallery Image Version Deletion Task:
+```
+  - name: Delete gallery Image Version.
+    azure_rm_galleryimageversion:
+      resource_group: "{{ resource_group }}"
+      gallery_name: "{{ shared_gallery_name }}"
+      gallery_image_name: "{{ shared_image_name }}"
+      name: "{{ shared_image_version }}"
+      absent: yes
+```
+    Gallery Image Deletion Task:
+```
+  - name: Delete gallery image
+    azure_rm_galleryimage:
+      resource_group: "{{ resource_group }}"
+      gallery_name: "{{ shared_gallery_name }}"
+      name: "{{ shared_image_name }}"
+      absent: yes
+```
+    Gallery Deletion Task:
+```
+  - name: Delete a simple gallery.
+    azure_rm_gallery:
+      resource_group: "{{ resource_group }}"
+      name: "{{ shared_gallery_name }}"
+      absent: yes
+```
+    After this playbook competes, you can visit the Azure Portal(https://portol.azure.com) and find your image version, image and gallery being removed from your resource group.
