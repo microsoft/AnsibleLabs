@@ -12,4 +12,3 @@
         name: "{{ shared_gallery_name }}"
         location: "{{ location }}"
         description: This is the gallery description.
-      register: output
