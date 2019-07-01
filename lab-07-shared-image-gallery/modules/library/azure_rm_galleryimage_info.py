@@ -15,7 +15,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: azure_rm_computegalleryimage_info
+module: azure_rm_galleryimage_info
 version_added: '2.9'
 short_description: Get GalleryImage info.
 description:
@@ -43,11 +43,11 @@ author:
 
 EXAMPLES = '''
 - name: List gallery images in a gallery.
-  azure_rm_computegalleryimage_info:
+  azure_rm_galleryimage_info:
     resource_group: myResourceGroup
     gallery_name: myGallery
 - name: Get a gallery image.
-  azure_rm_computegalleryimage_info:
+  azure_rm_galleryimage_info:
     resource_group: myResourceGroup
     gallery_name: myGallery
     name: myImage
@@ -120,11 +120,11 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
         self.module_arg_spec = dict(
             resource_group=dict(
                 type='str',
-                required=true
+                required=True
             ),
             gallery_name=dict(
                 type='str',
-                required=true
+                required=True
             ),
             name=dict(
                 type='str'
@@ -133,8 +133,6 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
 
         self.resource_group = None
         self.gallery_name = None
-        self.name = None
-        self.id = None
         self.name = None
         self.type = None
         self.location = None
@@ -166,10 +164,12 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
         if (self.resource_group is not None and
             self.gallery_name is not None and
             self.name is not None):
-            self.results['gallery_images'] = self.format_item(self.get())
+            # self.results['gallery_images'] = self.format_item(self.get())
+            self.results['gallery_images'] = self.get()
         elif (self.resource_group is not None and
               self.gallery_name is not None):
-            self.results['gallery_images'] = self.format_item(self.listbygallery())
+            # self.results['gallery_images'] = self.format_item(self.listbygallery())
+            self.results['gallery_images'] = self.listbygallery()
         return self.results
 
     def get(self):
@@ -200,7 +200,7 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
@@ -223,7 +223,6 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
         self.url = self.url.replace('{{ gallery_name }}', self.gallery_name)
-        self.url = self.url.replace('{{ image_name }}', self.name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -234,15 +233,12 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
         return results
-
-    def format_item(item):
-        return item
 
 
 def main():

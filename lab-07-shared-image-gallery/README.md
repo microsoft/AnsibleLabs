@@ -121,7 +121,7 @@ Virtual Network Inteface Cards Creation Task:
         resource_group: "{{ resource_group }}"
         gallery_name: "{{ shared_gallery_name }}"
         gallery_image_name: "{{ shared_image_name }}"
-        name: 10.1.3
+        name: "{{ shared_image_version }}"
         location: "{{ location }}"
         publishing_profile:
           end_of_life_date: "2020-10-01t00:00:00+00:00"
@@ -181,8 +181,39 @@ Virtual Network Inteface Cards Creation Task:
 ```
     After this playbook competes, you can visit the Azure Portal(https://portol.azure.com) and find the newly-created virtual machine scale set in your resource group.
 
-## Playbook 5 - Delete Gallery
-    ansible-playbook 05-delete-gallery
+## Playbook 5 - Get Information
+    ansible-playbook 05-get-info
+    Gallery Information Get Task:
+    In this task, we can get the information of the gallery. 
+```
+  - name: Get Shared Image Gallery Information
+    azure_rm_gallery_info:
+      resource_group: "{{ resource_group }}"
+      name: "{{ shared_gallery_name }}"
+```
+    Shared Image Information Get Task:
+    In this task, we can get the information of the shared image. 
+```
+  - name: Get Shared Image Information
+    azure_rm_galleryimage_info:
+      resource_group: "{{ resource_group }}"
+      gallery_name: "{{ shared_gallery_name }}"
+      name: "{{ shared_image_name }}"
+```
+    Shared Image Version Information Get Task:
+    In this task, we can get the information of the shared image version.
+```
+  - name: Get Gallery Image Version Information
+    azure_rm_galleryimageversion_info:
+      resource_group: "{{ resource_group }}"
+      gallery_name: "{{ shared_gallery_name }}"
+      gallery_image_name: "{{ shared_image_name }}"
+      name: "{{ shared_image_version }}"
+```
+
+
+## Playbook 6 - Delete Gallery
+    ansible-playbook 06-delete-gallery
     Gallery Image Version Deletion Task:
 ```
   - name: Delete gallery Image Version.

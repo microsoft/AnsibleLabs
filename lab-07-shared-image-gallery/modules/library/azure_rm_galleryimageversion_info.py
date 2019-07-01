@@ -15,7 +15,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: azure_rm_computegalleryimageversion_info
+module: azure_rm_galleryimageversion_info
 version_added: '2.9'
 short_description: Get GalleryImageVersion info.
 description:
@@ -49,18 +49,18 @@ author:
 
 EXAMPLES = '''
 - name: List gallery Image Versions in a gallery Image Definition.
-  azure_rm_computegalleryimageversion_info:
+  azure_rm_galleryimageversion_info:
     resource_group: myResourceGroup
     gallery_name: myGallery
     gallery_image_name: myImage
 - name: Get a gallery Image Version.
-  azure_rm_computegalleryimageversion_info:
+  azure_rm_galleryimageversion_info:
     resource_group: myResourceGroup
     gallery_name: myGallery
     gallery_image_name: myImage
     name: myVersion
 - name: Get a gallery Image Version with replication status.
-  azure_rm_computegalleryimageversion_info:
+  azure_rm_galleryimageversion_info:
     resource_group: myResourceGroup
     gallery_name: myGallery
     gallery_image_name: myImage
@@ -134,15 +134,15 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
         self.module_arg_spec = dict(
             resource_group=dict(
                 type='str',
-                required=true
+                required=True
             ),
             gallery_name=dict(
                 type='str',
-                required=true
+                required=True
             ),
             gallery_image_name=dict(
                 type='str',
-                required=true
+                required=True
             ),
             name=dict(
                 type='str'
@@ -152,8 +152,6 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
         self.resource_group = None
         self.gallery_name = None
         self.gallery_image_name = None
-        self.name = None
-        self.id = None
         self.name = None
         self.type = None
         self.location = None
@@ -186,11 +184,13 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
             self.gallery_name is not None and
             self.gallery_image_name is not None and
             self.name is not None):
-            self.results['gallery_image_versions'] = self.format_item(self.get())
+            # self.results['gallery_image_versions'] = self.format_item(self.get())
+            self.results['gallery_image_versions'] = self.get()
         elif (self.resource_group is not None and
               self.gallery_name is not None and
               self.gallery_image_name is not None):
-            self.results['gallery_image_versions'] = self.format_item(self.listbygalleryimage())
+            # self.results['gallery_image_versions'] = self.format_item(self.listbygalleryimage())
+            self.results['gallery_image_versions'] = self.listbygalleryimage()
         return self.results
 
     def get(self):
@@ -212,7 +212,7 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
         self.url = self.url.replace('{{ gallery_name }}', self.gallery_name)
-        self.url = self.url.replace('{{ image_name }}', self.image_name)
+        self.url = self.url.replace('{{ image_name }}', self.gallery_image_name)
         self.url = self.url.replace('{{ version_name }}', self.name)
 
         try:
@@ -224,7 +224,7 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
@@ -249,8 +249,7 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
         self.url = self.url.replace('{{ gallery_name }}', self.gallery_name)
-        self.url = self.url.replace('{{ image_name }}', self.image_name)
-        self.url = self.url.replace('{{ version_name }}', self.name)
+        self.url = self.url.replace('{{ image_name }}', self.gallery_image_name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -261,15 +260,12 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
         return results
-
-    def format_item(item):
-        return item
 
 
 def main():

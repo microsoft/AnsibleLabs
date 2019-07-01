@@ -15,7 +15,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: azure_rm_computegallery_info
+module: azure_rm_gallery_info
 version_added: '2.9'
 short_description: Get Gallery info.
 description:
@@ -36,12 +36,12 @@ author:
 
 EXAMPLES = '''
 - name: List galleries in a subscription.
-  azure_rm_computegallery_info: {}
+  azure_rm_gallery_info: 
 - name: List galleries in a resource group.
-  azure_rm_computegallery_info:
+  azure_rm_gallery_info:
     resource_group: myResourceGroup
 - name: Get a gallery.
-  azure_rm_computegallery_info:
+  azure_rm_gallery_info:
     resource_group: myResourceGroup
     name: myGallery
 
@@ -121,8 +121,6 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
 
         self.resource_group = None
         self.name = None
-        self.id = None
-        self.name = None
         self.type = None
         self.location = None
         self.tags = None
@@ -152,11 +150,14 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
 
         if (self.resource_group is not None and
             self.name is not None):
-            self.results['galleries'] = self.format_item(self.get())
+            # self.results['galleries'] = self.format_item(self.get())
+            self.results['galleries'] = self.get()
         elif (self.resource_group is not None):
-            self.results['galleries'] = self.format_item(self.listbyresourcegroup())
+            # self.results['galleries'] = self.format_item(self.listbyresourcegroup())
+            self.results['galleries'] = self.listbyresourcegroup()
         else:
-            self.results['galleries'] = [self.format_item(self.list())]
+            # self.results['galleries'] = [self.format_item(self.list())]
+            self.results['galleries'] = self.list()
         return self.results
 
     def get(self):
@@ -184,7 +185,7 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
@@ -204,7 +205,6 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
                     '/galleries')
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
-        self.url = self.url.replace('{{ gallery_name }}', self.name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -215,7 +215,7 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
@@ -232,8 +232,6 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
                     '/Microsoft.Compute' +
                     '/galleries')
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
-        self.url = self.url.replace('{{ resource_group }}', self.resource_group)
-        self.url = self.url.replace('{{ gallery_name }}', self.name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -244,15 +242,12 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
         return results
-
-    def format_item(self, item):
-        return item
 
 
 def main():
