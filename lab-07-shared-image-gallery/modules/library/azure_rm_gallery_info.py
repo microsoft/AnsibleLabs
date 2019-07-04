@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2019 Zim Kalinowski, (@zikalino)
+# Copyright (c) 2019 Liu Qingyi, (@smile37773)
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -15,7 +15,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: azure_rm_computegallery_info
+module: azure_rm_gallery_info
 version_added: '2.9'
 short_description: Get Gallery info.
 description:
@@ -24,24 +24,26 @@ options:
   resource_group:
     description:
       - The name of the resource group.
+    type: str
   name:
     description:
       - Resource name
+    type: str
 extends_documentation_fragment:
   - azure
 author:
-  - Zim Kalinowski (@zikalino)
+  - Liu Qingyi (@smile37773)
 
 '''
 
 EXAMPLES = '''
 - name: List galleries in a subscription.
-  azure_rm_computegallery_info: {}
+  azure_rm_gallery_info:
 - name: List galleries in a resource group.
-  azure_rm_computegallery_info:
+  azure_rm_gallery_info:
     resource_group: myResourceGroup
 - name: Get a gallery.
-  azure_rm_computegallery_info:
+  azure_rm_gallery_info:
     resource_group: myResourceGroup
     name: myGallery
 
@@ -55,48 +57,59 @@ galleries:
   returned: always
   type: complex
   contains:
-    gallery_name:
-      description: The key is the name of the server that the values relate to.
-      type: complex
+    id:
+      description:
+        - Resource Id
+      returned: always
+      type: str
+      sample: "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      /resourceGroups/myResourceGroup/providers/Microsoft.Compute/galleries/myGallery"
+    name:
+      description:
+        - Resource name
+      returned: always
+      type: str
+      sample: "myGallery"
+    type:
+      description:
+        - Resource type
+      returned: always
+      type: str
+      sample: "Microsoft.Compute/galleries"
+    location:
+      description:
+        - Resource location
+      returned: always
+      type: str
+      sample: "eastus"
+    tags:
+      description:
+        - Resource tags
+      returned: always
+      type: dict
+      sample: { "tag": "value" }
+    properties:
+      returned: always
+      type: dict
       contains:
-        id:
           description:
-            - Resource Id
-          returned: always
-          type: str
-          sample: null
-        name:
-          description:
-            - Resource name
-          returned: always
-          type: str
-          sample: null
-        type:
-          description:
-            - Resource type
-          returned: always
-          type: str
-          sample: null
-        location:
-          description:
-            - Resource location
-          returned: always
-          type: str
-          sample: null
-        tags:
-          description:
-            - Resource tags
-          returned: always
-          type: >-
-            unknown[DictionaryType
-            {"$id":"70","$type":"DictionaryType","valueType":{"$id":"71","$type":"PrimaryType","knownPrimaryType":"string","name":{"$id":"72","fixed":false,"raw":"String"},"deprecated":false},"supportsAdditionalProperties":false,"name":{"$id":"73","fixed":false},"deprecated":false}]
-          sample: null
-        properties:
-          description:
-            - !<tag:yaml.org,2002:js/undefined> ''
-          returned: always
-          type: dict
-          sample: null
+            type: str
+            sample: "This is the gallery description."
+          provisioningState:
+            description:
+              - The current state of the gallery.
+            type: str
+            sample: "Succeeded"
+          identifier:
+            description:
+              - This is the gallery Definition identifier.
+            type: dict
+            contain:
+              uniqueName:
+                description:
+                  - The unique name of the Shared Image Gallery. This name is generated automatically by Azure.
+                type: str
+                sample: "myUniqueName"
 
 '''
 
@@ -105,7 +118,11 @@ import json
 from ansible.module_utils.azure_rm_common import AzureRMModuleBase
 from ansible.module_utils.azure_rm_common_rest import GenericRestClient
 from copy import deepcopy
-from msrestazure.azure_exceptions import CloudError
+try:
+    from msrestazure.azure_exceptions import CloudError
+except Exception:
+    # handled in azure_rm_common
+    pass
 
 
 class AzureRMGalleriesInfo(AzureRMModuleBase):
@@ -121,12 +138,6 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
 
         self.resource_group = None
         self.name = None
-        self.id = None
-        self.name = None
-        self.type = None
-        self.location = None
-        self.tags = None
-        self.properties = None
 
         self.results = dict(changed=False)
         self.mgmt_client = None
@@ -140,7 +151,7 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
         self.header_parameters['Content-Type'] = 'application/json; charset=utf-8'
 
         self.mgmt_client = None
-        super(AzureRMGalleriesInfo, self).__init__(self.module_arg_spec, supports_tags=True)
+        super(AzureRMGalleriesInfo, self).__init__(self.module_arg_spec, supports_tags=False)
 
     def exec_module(self, **kwargs):
 
@@ -150,13 +161,15 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
         self.mgmt_client = self.get_mgmt_svc_client(GenericRestClient,
                                                     base_url=self._cloud_environment.endpoints.resource_manager)
 
-        if (self.resource_group is not None and
-            self.name is not None):
-            self.results['galleries'] = self.format_item(self.get())
+        if (self.resource_group is not None and self.name is not None):
+            # self.results['galleries'] = self.format_item(self.get())
+            self.results['galleries'] = self.get()
         elif (self.resource_group is not None):
-            self.results['galleries'] = self.format_item(self.listbyresourcegroup())
+            # self.results['galleries'] = self.format_item(self.listbyresourcegroup())
+            self.results['galleries'] = self.listbyresourcegroup()
         else:
-            self.results['galleries'] = [self.format_item(self.list())]
+            # self.results['galleries'] = [self.format_item(self.list())]
+            self.results['galleries'] = self.list()
         return self.results
 
     def get(self):
@@ -184,7 +197,7 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
@@ -204,7 +217,6 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
                     '/galleries')
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
-        self.url = self.url.replace('{{ gallery_name }}', self.name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -215,7 +227,7 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
@@ -232,8 +244,6 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
                     '/Microsoft.Compute' +
                     '/galleries')
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
-        self.url = self.url.replace('{{ resource_group }}', self.resource_group)
-        self.url = self.url.replace('{{ gallery_name }}', self.name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -244,15 +254,12 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
         return results
-
-    def format_item(self, item):
-        return item
 
 
 def main():

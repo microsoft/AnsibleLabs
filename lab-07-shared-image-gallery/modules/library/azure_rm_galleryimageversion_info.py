@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2019 Zim Kalinowski, (@zikalino)
+# Copyright (c) 2019 Liu Qingyi, (@smile37773)
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -15,7 +15,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: azure_rm_computegalleryimageversion_info
+module: azure_rm_galleryimageversion_info
 version_added: '2.9'
 short_description: Get GalleryImageVersion info.
 description:
@@ -24,43 +24,47 @@ options:
   resource_group:
     description:
       - The name of the resource group.
+    type: str
     required: true
   gallery_name:
     description:
       - >-
         The name of the Shared Image Gallery in which the Image Definition
         resides.
+    type: str
     required: true
   gallery_image_name:
     description:
       - >-
         The name of the gallery Image Definition in which the Image Version
         resides.
+    type: str
     required: true
   name:
     description:
       - Resource name
+    type: str
 extends_documentation_fragment:
   - azure
 author:
-  - Zim Kalinowski (@zikalino)
+  - Liu Qingyi (@smile37773)
 
 '''
 
 EXAMPLES = '''
 - name: List gallery Image Versions in a gallery Image Definition.
-  azure_rm_computegalleryimageversion_info:
+  azure_rm_galleryimageversion_info:
     resource_group: myResourceGroup
     gallery_name: myGallery
     gallery_image_name: myImage
 - name: Get a gallery Image Version.
-  azure_rm_computegalleryimageversion_info:
+  azure_rm_galleryimageversion_info:
     resource_group: myResourceGroup
     gallery_name: myGallery
     gallery_image_name: myImage
     name: myVersion
 - name: Get a gallery Image Version with replication status.
-  azure_rm_computegalleryimageversion_info:
+  azure_rm_galleryimageversion_info:
     resource_group: myResourceGroup
     gallery_name: myGallery
     gallery_image_name: myImage
@@ -76,48 +80,59 @@ gallery_image_versions:
   returned: always
   type: complex
   contains:
-    galleryimageversion_name:
-      description: The key is the name of the server that the values relate to.
-      type: complex
+    id:
+      description:
+        - Resource Id
+      returned: always
+      type: str
+      sample: "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups
+      /myResourceGroup/providers/Microsoft.Compute/galleries/myGallery/
+      images/myImage/versions/myVersion\"
+    name:
+      description:
+        - Resource name
+      returned: always
+      type: str
+      sample: "myVersion"
+    type:
+      description:
+        - Resource type
+      returned: always
+      type: str
+      sample: "Microsoft.Compute/galleries/images/versions"
+    location:
+      description:
+        - Resource location
+      returned: always
+      type: str
+      sample: "eastus"
+    tags:
+      description:
+        - Resource tags
+      returned: always
+      type: dict
+      sample: { "tag": "value" }
+    properties:
+      returned: always
+      type: dict
       contains:
-        id:
+        publishingProfile:
           description:
-            - Resource Id
-          returned: always
-          type: str
-          sample: null
-        name:
-          description:
-            - Resource name
-          returned: always
-          type: str
-          sample: null
-        type:
-          description:
-            - Resource type
-          returned: always
-          type: str
-          sample: null
-        location:
-          description:
-            - Resource location
-          returned: always
-          type: str
-          sample: null
-        tags:
-          description:
-            - Resource tags
-          returned: always
-          type: >-
-            unknown[DictionaryType
-            {"$id":"70","$type":"DictionaryType","valueType":{"$id":"71","$type":"PrimaryType","knownPrimaryType":"string","name":{"$id":"72","fixed":false,"raw":"String"},"deprecated":false},"supportsAdditionalProperties":false,"name":{"$id":"73","fixed":false},"deprecated":false}]
-          sample: null
-        properties:
-          description:
-            - !<tag:yaml.org,2002:js/undefined> ''
-          returned: always
+            - The publishing profile of a gallery Image Version.
           type: dict
-          sample: null
+        storageProfile:
+          description:
+            - This is the storage profile of a gallery Image Version.
+          type: dict
+        replicationStatus:
+          description:
+            - This is the replication status of the gallery Image Version.
+          type: dict
+        provisioningState:
+            description:
+              - The current state of the gallery.
+            type: str
+            sample: "Succeeded"
 
 '''
 
@@ -126,7 +141,11 @@ import json
 from ansible.module_utils.azure_rm_common import AzureRMModuleBase
 from ansible.module_utils.azure_rm_common_rest import GenericRestClient
 from copy import deepcopy
-from msrestazure.azure_exceptions import CloudError
+try:
+    from msrestazure.azure_exceptions import CloudError
+except Exception:
+    # handled in azure_rm_common
+    pass
 
 
 class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
@@ -134,15 +153,15 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
         self.module_arg_spec = dict(
             resource_group=dict(
                 type='str',
-                required=true
+                required=True
             ),
             gallery_name=dict(
                 type='str',
-                required=true
+                required=True
             ),
             gallery_image_name=dict(
                 type='str',
-                required=true
+                required=True
             ),
             name=dict(
                 type='str'
@@ -153,12 +172,6 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
         self.gallery_name = None
         self.gallery_image_name = None
         self.name = None
-        self.id = None
-        self.name = None
-        self.type = None
-        self.location = None
-        self.tags = None
-        self.properties = None
 
         self.results = dict(changed=False)
         self.mgmt_client = None
@@ -172,7 +185,7 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
         self.header_parameters['Content-Type'] = 'application/json; charset=utf-8'
 
         self.mgmt_client = None
-        super(AzureRMGalleryImageVersionsInfo, self).__init__(self.module_arg_spec, supports_tags=True)
+        super(AzureRMGalleryImageVersionsInfo, self).__init__(self.module_arg_spec, supports_tags=False)
 
     def exec_module(self, **kwargs):
 
@@ -183,14 +196,16 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
                                                     base_url=self._cloud_environment.endpoints.resource_manager)
 
         if (self.resource_group is not None and
-            self.gallery_name is not None and
-            self.gallery_image_name is not None and
-            self.name is not None):
-            self.results['gallery_image_versions'] = self.format_item(self.get())
+                self.gallery_name is not None and
+                self.gallery_image_name is not None and
+                self.name is not None):
+            # self.results['gallery_image_versions'] = self.format_item(self.get())
+            self.results['gallery_image_versions'] = self.get()
         elif (self.resource_group is not None and
               self.gallery_name is not None and
               self.gallery_image_name is not None):
-            self.results['gallery_image_versions'] = self.format_item(self.listbygalleryimage())
+            # self.results['gallery_image_versions'] = self.format_item(self.listbygalleryimage())
+            self.results['gallery_image_versions'] = self.listbygalleryimage()
         return self.results
 
     def get(self):
@@ -212,7 +227,7 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
         self.url = self.url.replace('{{ gallery_name }}', self.gallery_name)
-        self.url = self.url.replace('{{ image_name }}', self.image_name)
+        self.url = self.url.replace('{{ image_name }}', self.gallery_image_name)
         self.url = self.url.replace('{{ version_name }}', self.name)
 
         try:
@@ -224,7 +239,7 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
@@ -249,8 +264,7 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
         self.url = self.url.replace('{{ gallery_name }}', self.gallery_name)
-        self.url = self.url.replace('{{ image_name }}', self.image_name)
-        self.url = self.url.replace('{{ version_name }}', self.name)
+        self.url = self.url.replace('{{ image_name }}', self.gallery_image_name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -261,15 +275,12 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
         return results
-
-    def format_item(item):
-        return item
 
 
 def main():

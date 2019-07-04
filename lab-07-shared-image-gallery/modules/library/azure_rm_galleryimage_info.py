@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2019 Zim Kalinowski, (@zikalino)
+# Copyright (c) 2019 Liu Qingyi, (@smile37773)
 #
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -15,7 +15,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: azure_rm_computegalleryimage_info
+module: azure_rm_galleryimage_info
 version_added: '2.9'
 short_description: Get GalleryImage info.
 description:
@@ -24,30 +24,33 @@ options:
   resource_group:
     description:
       - The name of the resource group.
+    type: str
     required: true
   gallery_name:
     description:
       - >-
         The name of the Shared Image Gallery from which the Image Definitions
         are to be retrieved.
+    type: str
     required: true
   name:
     description:
       - Resource name
+    type: str
 extends_documentation_fragment:
   - azure
 author:
-  - Zim Kalinowski (@zikalino)
+  - Liu Qingyi (@smile37773)
 
 '''
 
 EXAMPLES = '''
 - name: List gallery images in a gallery.
-  azure_rm_computegalleryimage_info:
+  azure_rm_galleryimage_info:
     resource_group: myResourceGroup
     gallery_name: myGallery
 - name: Get a gallery image.
-  azure_rm_computegalleryimage_info:
+  azure_rm_galleryimage_info:
     resource_group: myResourceGroup
     gallery_name: myGallery
     name: myImage
@@ -62,48 +65,72 @@ gallery_images:
   returned: always
   type: complex
   contains:
-    galleryimage_name:
-      description: The key is the name of the server that the values relate to.
-      type: complex
+    id:
+      description:
+        - Resource Id
+      returned: always
+      type: str
+      sample: "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/myResourceGroup
+      /providers/Microsoft.Compute/galleries/myGallery/images/myImage"
+    name:
+      description:
+        - Resource name
+      returned: always
+      type: str
+      sample: myImage
+    type:
+      description:
+        - Resource type
+      returned: always
+      type: str
+      sample: "Microsoft.Compute/galleries/images"
+    location:
+      description:
+        - Resource location
+      returned: always
+      type: str
+      sample: "eastus"
+    tags:
+      description:
+        - Resource tags
+      returned: always
+      type: dict
+      sample: { "tag": "value" }
+    properties:
+      returned: always
+      type: dict
       contains:
-        id:
-          description:
-            - Resource Id
-          returned: always
-          type: str
-          sample: null
-        name:
-          description:
-            - Resource name
-          returned: always
-          type: str
-          sample: null
-        type:
-          description:
-            - Resource type
-          returned: always
-          type: str
-          sample: null
-        location:
-          description:
-            - Resource location
-          returned: always
-          type: str
-          sample: null
-        tags:
-          description:
-            - Resource tags
-          returned: always
-          type: >-
-            unknown[DictionaryType
-            {"$id":"70","$type":"DictionaryType","valueType":{"$id":"71","$type":"PrimaryType","knownPrimaryType":"string","name":{"$id":"72","fixed":false,"raw":"String"},"deprecated":false},"supportsAdditionalProperties":false,"name":{"$id":"73","fixed":false},"deprecated":false}]
-          sample: null
-        properties:
-          description:
-            - !<tag:yaml.org,2002:js/undefined> ''
-          returned: always
-          type: dict
-          sample: null
+          osState:
+            description:
+              - The allowed values for OS State are 'Generalized'.
+            type: OperatingSystemStateTypes
+            sample: "Generalized"
+          osType:
+            description: >-
+              This property allows you to specify the type of the OS that is included in the disk
+              when creating a VM from a managed image.
+            type: OperatingSystemTypes
+            sample: "Linux"
+          identifier:
+            description:
+              - This is the gallery Image Definition identifier.
+            type: dict
+            contains:
+              offer:
+                description:
+                  - The name of the gallery Image Definition offer.
+                type: str
+                sample: "myOfferName"
+              publisher:
+                description:
+                  - The name of the gallery Image Definition publisher.
+                type: str
+                sample: "myPublisherName"
+              sku:
+                description:
+                  - The name of the gallery Image Definition SKU.
+                type: str
+                sample: "mySkuName"
 
 '''
 
@@ -112,7 +139,11 @@ import json
 from ansible.module_utils.azure_rm_common import AzureRMModuleBase
 from ansible.module_utils.azure_rm_common_rest import GenericRestClient
 from copy import deepcopy
-from msrestazure.azure_exceptions import CloudError
+try:
+    from msrestazure.azure_exceptions import CloudError
+except Exception:
+    # handled in azure_rm_common
+    pass
 
 
 class AzureRMGalleryImagesInfo(AzureRMModuleBase):
@@ -120,11 +151,11 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
         self.module_arg_spec = dict(
             resource_group=dict(
                 type='str',
-                required=true
+                required=True
             ),
             gallery_name=dict(
                 type='str',
-                required=true
+                required=True
             ),
             name=dict(
                 type='str'
@@ -134,12 +165,6 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
         self.resource_group = None
         self.gallery_name = None
         self.name = None
-        self.id = None
-        self.name = None
-        self.type = None
-        self.location = None
-        self.tags = None
-        self.properties = None
 
         self.results = dict(changed=False)
         self.mgmt_client = None
@@ -153,7 +178,7 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
         self.header_parameters['Content-Type'] = 'application/json; charset=utf-8'
 
         self.mgmt_client = None
-        super(AzureRMGalleryImagesInfo, self).__init__(self.module_arg_spec, supports_tags=True)
+        super(AzureRMGalleryImagesInfo, self).__init__(self.module_arg_spec, supports_tags=False)
 
     def exec_module(self, **kwargs):
 
@@ -164,12 +189,14 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
                                                     base_url=self._cloud_environment.endpoints.resource_manager)
 
         if (self.resource_group is not None and
-            self.gallery_name is not None and
-            self.name is not None):
-            self.results['gallery_images'] = self.format_item(self.get())
+                self.gallery_name is not None and
+                self.name is not None):
+            # self.results['gallery_images'] = self.format_item(self.get())
+            self.results['gallery_images'] = self.get()
         elif (self.resource_group is not None and
               self.gallery_name is not None):
-            self.results['gallery_images'] = self.format_item(self.listbygallery())
+            # self.results['gallery_images'] = self.format_item(self.listbygallery())
+            self.results['gallery_images'] = self.listbygallery()
         return self.results
 
     def get(self):
@@ -200,7 +227,7 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
@@ -223,7 +250,6 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
         self.url = self.url.replace('{{ gallery_name }}', self.gallery_name)
-        self.url = self.url.replace('{{ image_name }}', self.name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -234,15 +260,12 @@ class AzureRMGalleryImagesInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
         return results
-
-    def format_item(item):
-        return item
 
 
 def main():
