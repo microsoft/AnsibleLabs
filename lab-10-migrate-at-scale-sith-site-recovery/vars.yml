@@ -1,0 +1,3 @@
+resource_group: myResourceGroup
+location: westus
+vault_network_name: testVault

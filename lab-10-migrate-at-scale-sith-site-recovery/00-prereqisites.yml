@@ -1,0 +1,22 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: Create or Update Recovery Services vault
+      azure_rm_recoveryservicesvault:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vault_network_name }}"
+        sku:
+          name: Standard
+        location: "{{ location }}"  
+    - name: Get Recovery Services Resource
+      azure_rm_recoveryservicesvault_info:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vault_network_name }}"
+    - name: Delete Recovery Services Vault
+      azure_rm_recoveryservicesvault:
+        resource_group: "{{ resource_group }}"
+        name: "{{ vault_network_name }}"
+        state: absent
+    

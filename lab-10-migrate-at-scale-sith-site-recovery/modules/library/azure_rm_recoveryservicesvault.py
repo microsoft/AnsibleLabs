@@ -27,64 +27,71 @@ options:
         The name of the resource group where the recovery services vault is
         present.
     required: true
+    type: str
   name:
     description:
       - Resource name associated with the resource.
+    required: true
+    type: str
   e_tag:
     description:
       - Optional ETag.
+    type: str
   location:
     description:
       - Resource location.
-    required: true
+    type: str
   upgrade_details:
     description:
-      - undefined
+      - Details for upgrading vault.
+    type: dict
     suboptions:
       operation_id:
         description:
           - ID of the vault upgrade operation.
+        type: str
       start_time_utc:
         description:
           - UTC time at which the upgrade operation has started.
+        type: str
       last_updated_time_utc:
         description:
           - UTC time at which the upgrade operation status was last updated.
+        type: str
       end_time_utc:
         description:
           - UTC time at which the upgrade operation has ended.
+        type: str
       status:
         description:
           - Status of the vault upgrade operation.
+        type: dict
       message:
         description:
           - >-
             Message to the user containing information about the upgrade
             operation.
+        type: str
       trigger_type:
         description:
           - The way the vault upgrade was triggered.
+        type: dict
       upgraded_resource_id:
         description:
           - Resource ID of the upgraded vault.
+        type: str
       previous_resource_id:
         description:
           - Resource ID of the vault before the upgrade.
+        type: str
   provisioning_state:
     description:
       - Provisioning State.
+    type: str
   sku_name:
     description:
       - The Sku name.
-    required: true
-  id:
-    description:
-      - Resource Id represents the complete path to the resource.
-  type:
-    description:
-      - >-
-        Resource type represents the complete path of the form
-        Namespace/ResourceType/ResourceType/...
+    type: str
   state:
     description:
       - Assert the state of the Vault.
@@ -102,22 +109,13 @@ author:
 '''
 
 EXAMPLES = '''
-- name: Create of Update Recovery Services vault
+- name: Create or Update Recovery Services vault
   azure_rm_recoveryservicesvault:
     resource_group: myResourceGroup
     name: myVault
-    vault:
-      properties: {}
-      sku:
-        name: Standard
-      location: West US
-- name: Update Resource
-  azure_rm_recoveryservicesvault:
-    resource_group: myResourceGroup
-    name: myVault
-    vault:
-      tags:
-        PatchKey: PatchKeyUpdated
+    sku:
+      name: Standard
+    location: westus  
 - name: Delete Recovery Services Vault
   azure_rm_recoveryservicesvault:
     resource_group: myResourceGroup
@@ -133,129 +131,6 @@ id:
   returned: always
   type: str
   sample: null
-name:
-  description:
-    - Resource name associated with the resource.
-  returned: always
-  type: str
-  sample: null
-type:
-  description:
-    - >-
-      Resource type represents the complete path of the form
-      Namespace/ResourceType/ResourceType/...
-  returned: always
-  type: str
-  sample: null
-e_tag:
-  description:
-    - Optional ETag.
-  returned: always
-  type: str
-  sample: null
-location:
-  description:
-    - Resource location.
-  returned: always
-  type: str
-  sample: null
-tags:
-  description:
-    - Resource tags.
-  returned: always
-  type: >-
-    unknown[DictionaryType
-    {"$id":"187","$type":"DictionaryType","valueType":{"$id":"188","$type":"PrimaryType","knownPrimaryType":"string","name":{"$id":"189","fixed":false,"raw":"String"},"deprecated":false},"supportsAdditionalProperties":false,"name":{"$id":"190","fixed":false},"deprecated":false}]
-  sample: null
-properties:
-  description:
-    - ''
-  returned: always
-  type: dict
-  sample: null
-  contains:
-    provisioning_state:
-      description:
-        - Provisioning State.
-      returned: always
-      type: str
-      sample: null
-    upgrade_details:
-      description:
-        - ''
-      returned: always
-      type: dict
-      sample: null
-      contains:
-        operation_id:
-          description:
-            - ID of the vault upgrade operation.
-          returned: always
-          type: str
-          sample: null
-        start_time_utc:
-          description:
-            - UTC time at which the upgrade operation has started.
-          returned: always
-          type: datetime
-          sample: null
-        last_updated_time_utc:
-          description:
-            - UTC time at which the upgrade operation status was last updated.
-          returned: always
-          type: datetime
-          sample: null
-        end_time_utc:
-          description:
-            - UTC time at which the upgrade operation has ended.
-          returned: always
-          type: datetime
-          sample: null
-        status:
-          description:
-            - Status of the vault upgrade operation.
-          returned: always
-          type: str
-          sample: null
-        message:
-          description:
-            - >-
-              Message to the user containing information about the upgrade
-              operation.
-          returned: always
-          type: str
-          sample: null
-        trigger_type:
-          description:
-            - The way the vault upgrade was triggered.
-          returned: always
-          type: str
-          sample: null
-        upgraded_resource_id:
-          description:
-            - Resource ID of the upgraded vault.
-          returned: always
-          type: str
-          sample: null
-        previous_resource_id:
-          description:
-            - Resource ID of the vault before the upgrade.
-          returned: always
-          type: str
-          sample: null
-sku:
-  description:
-    - ''
-  returned: always
-  type: dict
-  sample: null
-  contains:
-    name:
-      description:
-        - The Sku name.
-      returned: always
-      type: str
-      sample: null
 
 '''
 
@@ -265,7 +140,11 @@ import re
 from ansible.module_utils.azure_rm_common_ext import AzureRMModuleBaseExt
 from ansible.module_utils.azure_rm_common_rest import GenericRestClient
 from copy import deepcopy
-from msrestazure.azure_exceptions import CloudError
+try:
+    from msrestazure.azure_exceptions import CloudError
+except Exception:
+    # handled in azure_rm_common
+    pass
 
 
 class Actions:
@@ -279,37 +158,70 @@ class AzureRMVaults(AzureRMModuleBaseExt):
                 type='str',
                 updatable=False,
                 disposition='resourceGroupName',
-                required=true
+                required=True
             ),
             name=dict(
                 type='str',
                 updatable=False,
                 disposition='vaultName',
-                required=true
+                required=True
             ),
             e_tag=dict(
                 type='str',
                 updatable=False,
-                disposition='/'
+                disposition='/eTag'
             ),
             location=dict(
                 type='str',
                 updatable=False,
-                disposition='/',
-                required=true
+                disposition='/'
             ),
             upgrade_details=dict(
                 type='dict',
-                disposition='/properties/upgradeDetails',
+                disposition='/properties/upgradeDetails/*',
                 options=dict(
+                  operation_id=dict(type='str',disposition='operationId'),
+                  start_time_utc=dict(type='str',disposition='startTimeUtc'),
+                  last_updated_time_utc=dict(type='str',disposition='lastUpdatedTimeUtc'),
+                  end_time_utc=dict(type='str',disposition='endTimeUtc'),
+                  status=dict(
+                    type='dict',
+                    disposition='status/*',
+                    options=dict(
+                      failed=dict(type='str',disposition='Failed'),
+                      in_progress=dict(type='str',disposition='InProgress'),
+                      unknown=dict(type='str',disposition='Unknown'),
+                      upgraded=dict(type='str',disposition='Upgraded')
+                    )
+                  ),
+                  message=dict(type='str',disposition='message'),
+                  trigger_type=dict(
+                    type='dict',
+                    disposition='triggerType/*',
+                    options=dict(
+                      forced_upgrade=dict(type='str',disposition='ForcedUpgrade'),
+                      user_triggered=dict(type='str',disposition='UserTriggered')
+                    )
+                  ),
+                  upgraded_resource_id=dict(type='str',disposition='upgradedResourceId'),
+                  previous_resource_id=dict(type='str',disposition='previousResourceId'),
                 )
+            ),
+            provisioning_state=dict(
+                type='str',
+                disposition='/properties/provisioningState',
+                choices=['Creating',
+                         'Deleting',
+                         'Failed',
+                         'Migrating',
+                         'Succeeded',  
+                         'Updating']
             ),
             sku_name=dict(
                 type='str',
                 disposition='/sku/name',
                 choices=['Standard',
-                         'RS0'],
-                required=true
+                         'RS0']
             ),
             state=dict(
                 type='str',
@@ -320,9 +232,6 @@ class AzureRMVaults(AzureRMModuleBaseExt):
 
         self.resource_group = None
         self.name = None
-        self.id = None
-        self.name = None
-        self.type = None
 
         self.results = dict(changed=False)
         self.mgmt_client = None
@@ -350,6 +259,8 @@ class AzureRMVaults(AzureRMModuleBaseExt):
 
         self.inflate_parameters(self.module_arg_spec, self.body, 0)
 
+        if not 'properties' in self.body:
+            self.body['properties'] = {}
         old_response = None
         response = None
 
@@ -390,6 +301,8 @@ class AzureRMVaults(AzureRMModuleBaseExt):
             else:
                 modifiers = {}
                 self.create_compare_modifiers(self.module_arg_spec, '', modifiers)
+                self.results['modifiers'] = modifiers
+                self.results['compare'] = []
                 if not self.default_compare(modifiers, self.body, old_response, '', self.results):
                     self.to_do = Actions.Update
 
@@ -427,13 +340,6 @@ class AzureRMVaults(AzureRMModuleBaseExt):
 
         if response:
            self.results["id"] = response["id"]
-           self.results["name"] = response["name"]
-           self.results["type"] = response["type"]
-           self.results["e_tag"] = response["e_tag"]
-           self.results["location"] = response["location"]
-           self.results["tags"] = response["tags"]
-           self.results["properties"] = response["properties"]
-           self.results["sku"] = response["sku"]
 
         return self.results
 

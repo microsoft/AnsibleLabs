@@ -92,7 +92,7 @@ author:
 
 EXAMPLES = '''
 - name: List of Recovery Services Resources in SubscriptionId
-  azure_rm_recoveryservicesvault_info: {}
+  azure_rm_recoveryservicesvault_info:
 - name: List of Recovery Services Resources in ResourceGroup
   azure_rm_recoveryservicesvault_info:
     resource_group: myResourceGroup
@@ -111,62 +111,47 @@ vaults:
   returned: always
   type: complex
   contains:
-    vault_name:
-      description: The key is the name of the server that the values relate to.
-      type: complex
-      contains:
-        id:
-          description:
-            - Resource Id represents the complete path to the resource.
+    id:
+      description:
+        - Resource Id represents the complete path to the resource.
+      returned: always
+      type: str
+      sample: null
+    name:
+      description:
+        - Resource name associated with the resource.
+      returned: always
+      type: str
+      sample: null
+    e_tag:
+      description:
+        - Optional ETag.
+      returned: always
+      type: str
+      sample: null
+    location:
+      description:
+        - Resource location.
           returned: always
           type: str
           sample: null
-        name:
-          description:
-            - Resource name associated with the resource.
-          returned: always
-          type: str
-          sample: null
-        type:
-          description:
-            - >-
-              Resource type represents the complete path of the form
-              Namespace/ResourceType/ResourceType/...
-          returned: always
-          type: str
-          sample: null
-        e_tag:
-          description:
-            - Optional ETag.
-          returned: always
-          type: str
-          sample: null
-        location:
-          description:
-            - Resource location.
-          returned: always
-          type: str
-          sample: null
-        tags:
-          description:
-            - Resource tags.
-          returned: always
-          type: >-
-            unknown[DictionaryType
-            {"$id":"187","$type":"DictionaryType","valueType":{"$id":"188","$type":"PrimaryType","knownPrimaryType":"string","name":{"$id":"189","fixed":false,"raw":"String"},"deprecated":false},"supportsAdditionalProperties":false,"name":{"$id":"190","fixed":false},"deprecated":false}]
-          sample: null
-        properties:
-          description:
-            - ''
-          returned: always
-          type: dict
-          sample: null
-        sku:
-          description:
-            - ''
-          returned: always
-          type: dict
-          sample: null
+    tags:
+      description:
+        - Resource tags.
+      returned: always
+      type: dict
+      sample: { "TestUpdatedKey": "TestUpdatedValue" }
+    sku_name:
+      description:
+        - The Sku name.
+      returned: always
+      type: str
+      sample: null
+    provisioning_state:
+        description:
+          - The current state of the gallery.
+        type: str
+        sample: "Succeeded"
 
 '''
 
@@ -175,7 +160,11 @@ import json
 from ansible.module_utils.azure_rm_common import AzureRMModuleBase
 from ansible.module_utils.azure_rm_common_rest import GenericRestClient
 from copy import deepcopy
-from msrestazure.azure_exceptions import CloudError
+try:
+    from msrestazure.azure_exceptions import CloudError
+except Exception:
+    # handled in azure_rm_common
+    pass
 
 
 class AzureRMVaultsInfo(AzureRMModuleBase):
@@ -191,14 +180,6 @@ class AzureRMVaultsInfo(AzureRMModuleBase):
 
         self.resource_group = None
         self.name = None
-        self.id = None
-        self.name = None
-        self.type = None
-        self.e_tag = None
-        self.location = None
-        self.tags = None
-        self.properties = None
-        self.sku = None
 
         self.results = dict(changed=False)
         self.mgmt_client = None
@@ -222,13 +203,12 @@ class AzureRMVaultsInfo(AzureRMModuleBase):
         self.mgmt_client = self.get_mgmt_svc_client(GenericRestClient,
                                                     base_url=self._cloud_environment.endpoints.resource_manager)
 
-        if (self.resource_group is not None and
-            self.name is not None):
-            self.results['vaults'] = self.format_item(self.get())
+        if (self.resource_group is not None and self.name is not None):
+            self.results['vaults'] = self.get()
         elif (self.resource_group is not None):
-            self.results['vaults'] = self.format_item(self.listbyresourcegroup())
+            self.results['vaults'] = self.listbyresourcegroup()
         else:
-            self.results['vaults'] = [self.format_item(self.listbysubscriptionid())]
+            self.results['vaults'] = self.listbysubscriptionid()
         return self.results
 
     def get(self):
@@ -256,12 +236,12 @@ class AzureRMVaultsInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
-        return results
+        return self.format_item(results) if results else None
 
     def listbyresourcegroup(self):
         response = None
@@ -276,7 +256,6 @@ class AzureRMVaultsInfo(AzureRMModuleBase):
                     '/vaults')
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
-        self.url = self.url.replace('{{ vault_name }}', self.name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -287,12 +266,12 @@ class AzureRMVaultsInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
-        return results
+        return [self.format_item(x) for x in results['value']] if results['value'] else []
 
     def listbysubscriptionid(self):
         response = None
@@ -304,8 +283,6 @@ class AzureRMVaultsInfo(AzureRMModuleBase):
                     '/Microsoft.RecoveryServices' +
                     '/vaults')
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
-        self.url = self.url.replace('{{ resource_group }}', self.resource_group)
-        self.url = self.url.replace('{{ vault_name }}', self.name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -316,15 +293,24 @@ class AzureRMVaultsInfo(AzureRMModuleBase):
                                               self.status_code,
                                               600,
                                               30)
-            results['temp_item'] = json.loads(response.text)
+            results = json.loads(response.text)
             # self.log('Response : {0}'.format(response))
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
-        return results
+        return [self.format_item(x) for x in results['value']] if results['value'] else []
 
-    def format_item(item):
-        return item
+    def format_item(self, item):
+        d = {
+            'id': item['id'],
+            'name': item['name'],
+            'location': item['location'],
+            'tags': item.get('tags'),
+            'e_tag': item['etag'],
+            'sku_state': item['sku']['name'],
+            'provisioning_state': item['properties']['provisioningState']
+        }
+        return d
 
 
 def main():
