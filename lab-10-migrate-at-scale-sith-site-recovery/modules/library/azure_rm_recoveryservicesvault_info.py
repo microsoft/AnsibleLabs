@@ -15,61 +15,74 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: azure_rm_recoveryservicesreplicationnetwork_info
+module: azure_rm_recoveryservicesvault_info
 version_added: '2.9'
-short_description: Get ReplicationNetwork info.
+short_description: Get Vault info.
 description:
-  - Get info of ReplicationNetwork.
+  - Get info of Vault.
 options:
-  resource_name:
-    description:
-      - The name of the recovery services vault.
-    required: true
   resource_group:
     description:
       - >-
         The name of the resource group where the recovery services vault is
         present.
-    required: true
-  fabric_name:
-    description:
-      - Server Id.
   name:
     description:
-      - Resource Name
+      - Resource name associated with the resource.
   id:
     description:
-      - Resource Id
+      - Resource Id represents the complete path to the resource.
   type:
     description:
-      - Resource Type
+      - >-
+        Resource type represents the complete path of the form
+        Namespace/ResourceType/ResourceType/...
+  e_tag:
+    description:
+      - Optional ETag.
   location:
     description:
-      - Resource Location
-  fabric_type:
+      - Resource location.
+  provisioning_state:
     description:
-      - The Fabric Type.
-  subnets:
+      - Provisioning State.
+  upgrade_details:
     description:
-      - The List of subnets.
-    type: list
+      - undefined
     suboptions:
-      name:
+      operation_id:
         description:
-          - The subnet name.
-      friendly_name:
+          - ID of the vault upgrade operation.
+      start_time_utc:
         description:
-          - The subnet friendly name.
-      address_list:
+          - UTC time at which the upgrade operation has started.
+      last_updated_time_utc:
         description:
-          - The list of addresses for the subnet.
-        type: list
-  friendly_name:
+          - UTC time at which the upgrade operation status was last updated.
+      end_time_utc:
+        description:
+          - UTC time at which the upgrade operation has ended.
+      status:
+        description:
+          - Status of the vault upgrade operation.
+      message:
+        description:
+          - >-
+            Message to the user containing information about the upgrade
+            operation.
+      trigger_type:
+        description:
+          - The way the vault upgrade was triggered.
+      upgraded_resource_id:
+        description:
+          - Resource ID of the upgraded vault.
+      previous_resource_id:
+        description:
+          - Resource ID of the vault before the upgrade.
+  sku_name:
     description:
-      - The Friendly Name.
-  network_type:
-    description:
-      - The Network Type.
+      - The Sku name.
+    required: true
 extends_documentation_fragment:
   - azure
 author:
@@ -78,63 +91,79 @@ author:
 '''
 
 EXAMPLES = '''
-- name: Gets the list of networks. View-only API.
-  azure_rm_recoveryservicesreplicationnetwork_info:
-    resource_name: myVault
+- name: List of Recovery Services Resources in SubscriptionId
+  azure_rm_recoveryservicesvault_info: {}
+- name: List of Recovery Services Resources in ResourceGroup
+  azure_rm_recoveryservicesvault_info:
     resource_group: myResourceGroup
-- name: Gets the list of networks under a fabric.
-  azure_rm_recoveryservicesreplicationnetwork_info:
-    resource_name: myVault
+- name: Get Recovery Services Resource
+  azure_rm_recoveryservicesvault_info:
     resource_group: myResourceGroup
-    fabric_name: myReplicationFabric
-- name: Gets a network with specified server id and network name.
-  azure_rm_recoveryservicesreplicationnetwork_info:
-    resource_name: myVault
-    resource_group: myResourceGroup
-    fabric_name: myReplicationFabric
-    name: myReplicationNetwork
+    name: myVault
 
 '''
 
 RETURN = '''
-replication_networks:
+vaults:
   description: >-
-    A list of dict results where the key is the name of the ReplicationNetwork
-    and the values are the facts for that ReplicationNetwork.
+    A list of dict results where the key is the name of the Vault and the values
+    are the facts for that Vault.
   returned: always
   type: complex
   contains:
-    replicationnetwork_name:
+    vault_name:
       description: The key is the name of the server that the values relate to.
       type: complex
       contains:
         id:
           description:
-            - Resource Id
+            - Resource Id represents the complete path to the resource.
           returned: always
           type: str
           sample: null
         name:
           description:
-            - Resource Name
+            - Resource name associated with the resource.
           returned: always
           type: str
           sample: null
         type:
           description:
-            - Resource Type
+            - >-
+              Resource type represents the complete path of the form
+              Namespace/ResourceType/ResourceType/...
+          returned: always
+          type: str
+          sample: null
+        e_tag:
+          description:
+            - Optional ETag.
           returned: always
           type: str
           sample: null
         location:
           description:
-            - Resource Location
+            - Resource location.
           returned: always
           type: str
           sample: null
+        tags:
+          description:
+            - Resource tags.
+          returned: always
+          type: >-
+            unknown[DictionaryType
+            {"$id":"187","$type":"DictionaryType","valueType":{"$id":"188","$type":"PrimaryType","knownPrimaryType":"string","name":{"$id":"189","fixed":false,"raw":"String"},"deprecated":false},"supportsAdditionalProperties":false,"name":{"$id":"190","fixed":false},"deprecated":false}]
+          sample: null
         properties:
           description:
-            - The Network Properties.
+            - ''
+          returned: always
+          type: dict
+          sample: null
+        sku:
+          description:
+            - ''
           returned: always
           type: dict
           sample: null
@@ -149,18 +178,10 @@ from copy import deepcopy
 from msrestazure.azure_exceptions import CloudError
 
 
-class AzureRMReplicationNetworksInfo(AzureRMModuleBase):
+class AzureRMVaultsInfo(AzureRMModuleBase):
     def __init__(self):
         self.module_arg_spec = dict(
-            resource_name=dict(
-                type='str',
-                required=true
-            ),
             resource_group=dict(
-                type='str',
-                required=true
-            ),
-            fabric_name=dict(
                 type='str'
             ),
             name=dict(
@@ -168,15 +189,16 @@ class AzureRMReplicationNetworksInfo(AzureRMModuleBase):
             )
         )
 
-        self.resource_name = None
         self.resource_group = None
-        self.fabric_name = None
         self.name = None
         self.id = None
         self.name = None
         self.type = None
+        self.e_tag = None
         self.location = None
+        self.tags = None
         self.properties = None
+        self.sku = None
 
         self.results = dict(changed=False)
         self.mgmt_client = None
@@ -185,12 +207,12 @@ class AzureRMReplicationNetworksInfo(AzureRMModuleBase):
         self.status_code = [200]
 
         self.query_parameters = {}
-        self.query_parameters['api-version'] = '2018-07-10'
+        self.query_parameters['api-version'] = '2016-06-01'
         self.header_parameters = {}
         self.header_parameters['Content-Type'] = 'application/json; charset=utf-8'
 
         self.mgmt_client = None
-        super(AzureRMReplicationNetworksInfo, self).__init__(self.module_arg_spec, supports_tags=True)
+        super(AzureRMVaultsInfo, self).__init__(self.module_arg_spec, supports_tags=True)
 
     def exec_module(self, **kwargs):
 
@@ -200,41 +222,30 @@ class AzureRMReplicationNetworksInfo(AzureRMModuleBase):
         self.mgmt_client = self.get_mgmt_svc_client(GenericRestClient,
                                                     base_url=self._cloud_environment.endpoints.resource_manager)
 
-        if (self.resource_name is not None and
-            self.resource_group is not None and
-            self.fabric_name is not None and
+        if (self.resource_group is not None and
             self.name is not None):
-            self.results['replication_networks'] = self.format_item(self.get())
-        elif (self.resource_name is not None and
-              self.resource_group is not None and
-              self.fabric_name is not None):
-            self.results['replication_networks'] = self.format_item(self.listbyreplicationfabrics())
-        elif (self.resource_name is not None and
-              self.resource_group is not None):
-            self.results['replication_networks'] = self.format_item(self.list())
+            self.results['vaults'] = self.format_item(self.get())
+        elif (self.resource_group is not None):
+            self.results['vaults'] = self.format_item(self.listbyresourcegroup())
+        else:
+            self.results['vaults'] = [self.format_item(self.listbysubscriptionid())]
         return self.results
 
     def get(self):
         response = None
         results = {}
         # prepare url
-        self.url = ('/Subscriptions' +
-                    '/{{ subscription_name }}' +
+        self.url = ('/subscriptions' +
+                    '/{{ subscription_id }}' +
                     '/resourceGroups' +
                     '/{{ resource_group }}' +
                     '/providers' +
                     '/Microsoft.RecoveryServices' +
                     '/vaults' +
-                    '/{{ vault_name }}' +
-                    '/replicationFabrics' +
-                    '/{{ replication_fabric_name }}' +
-                    '/replicationNetworks' +
-                    '/{{ replication_network_name }}')
-        self.url = self.url.replace('{{ subscription_name }}', self.subscription_name)
+                    '/{{ vault_name }}')
+        self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
-        self.url = self.url.replace('{{ vault_name }}', self.vault_name)
-        self.url = self.url.replace('{{ replication_fabric_name }}', self.replication_fabric_name)
-        self.url = self.url.replace('{{ replication_network_name }}', self.name)
+        self.url = self.url.replace('{{ vault_name }}', self.name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -252,26 +263,20 @@ class AzureRMReplicationNetworksInfo(AzureRMModuleBase):
 
         return results
 
-    def listbyreplicationfabrics(self):
+    def listbyresourcegroup(self):
         response = None
         results = {}
         # prepare url
-        self.url = ('/Subscriptions' +
-                    '/{{ subscription_name }}' +
+        self.url = ('/subscriptions' +
+                    '/{{ subscription_id }}' +
                     '/resourceGroups' +
                     '/{{ resource_group }}' +
                     '/providers' +
                     '/Microsoft.RecoveryServices' +
-                    '/vaults' +
-                    '/{{ vault_name }}' +
-                    '/replicationFabrics' +
-                    '/{{ replication_fabric_name }}' +
-                    '/replicationNetworks')
-        self.url = self.url.replace('{{ subscription_name }}', self.subscription_name)
+                    '/vaults')
+        self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
-        self.url = self.url.replace('{{ vault_name }}', self.vault_name)
-        self.url = self.url.replace('{{ replication_fabric_name }}', self.replication_fabric_name)
-        self.url = self.url.replace('{{ replication_network_name }}', self.name)
+        self.url = self.url.replace('{{ vault_name }}', self.name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -289,24 +294,18 @@ class AzureRMReplicationNetworksInfo(AzureRMModuleBase):
 
         return results
 
-    def list(self):
+    def listbysubscriptionid(self):
         response = None
         results = {}
         # prepare url
-        self.url = ('/Subscriptions' +
-                    '/{{ subscription_name }}' +
-                    '/resourceGroups' +
-                    '/{{ resource_group }}' +
+        self.url = ('/subscriptions' +
+                    '/{{ subscription_id }}' +
                     '/providers' +
                     '/Microsoft.RecoveryServices' +
-                    '/vaults' +
-                    '/{{ vault_name }}' +
-                    '/replicationNetworks')
-        self.url = self.url.replace('{{ subscription_name }}', self.subscription_name)
+                    '/vaults')
+        self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
-        self.url = self.url.replace('{{ vault_name }}', self.vault_name)
-        self.url = self.url.replace('{{ replication_fabric_name }}', self.replication_fabric_name)
-        self.url = self.url.replace('{{ replication_network_name }}', self.name)
+        self.url = self.url.replace('{{ vault_name }}', self.name)
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -329,7 +328,7 @@ class AzureRMReplicationNetworksInfo(AzureRMModuleBase):
 
 
 def main():
-    AzureRMReplicationNetworksInfo()
+    AzureRMVaultsInfo()
 
 
 if __name__ == '__main__':
