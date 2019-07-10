@@ -1,16 +1,11 @@
-- import_playbook: management_managementgroups_put.yml
-
-
+---
 - hosts: localhost
   roles:
-    - ../modules
-  vars_files:
-    - _vars.yml
+    - ./modules 
   vars:
     management_group_name: ChildGroup
   tasks:
-
     - name: AddSubscriptionToManagementGroup
       azure_rm_managementgroupsubscription:
-        group_id: '{{management_group_name}}'
+        group_id: '{{ management_group_name }}'
     

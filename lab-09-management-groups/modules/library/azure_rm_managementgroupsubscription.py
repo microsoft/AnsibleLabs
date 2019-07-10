@@ -188,24 +188,14 @@ class AzureRMManagementGroupSubscriptions(AzureRMModuleBaseExt):
         # self.log('Creating / Updating the ManagementGroupSubscription instance {0}'.format(self.))
 
         try:
-            if self.to_do == Actions.Create:
-                response = self.mgmt_client.query(self.url,
-                                                  'PUT',
-                                                  self.query_parameters,
-                                                  self.header_parameters,
-                                                  self.body,
-                                                  self.status_code,
-                                                  600,
-                                                  30)
-            else:
-                response = self.mgmt_client.query(self.url,
-                                                  'PUT',
-                                                  self.query_parameters,
-                                                  self.header_parameters,
-                                                  self.body,
-                                                  self.status_code,
-                                                  600,
-                                                  30)
+            response = self.mgmt_client.query(self.url,
+                                                'PUT',
+                                                self.query_parameters,
+                                                self.header_parameters,
+                                                self.body,
+                                                self.status_code,
+                                                600,
+                                                30)
         except CloudError as exc:
             self.log('Error attempting to create the ManagementGroupSubscription instance.')
             self.fail('Error creating the ManagementGroupSubscription instance: {0}'.format(str(exc)))
