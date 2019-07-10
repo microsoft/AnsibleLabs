@@ -289,9 +289,10 @@ class AzureRMManagementGroups(AzureRMModuleBaseExt):
           type=dict(type='str'),
           properties=dict(
             type='dict',
+            disposition="/",
             options=dict(
-              tenantId=dict(type='str'),
-              display_name=dict(type='str'),
+              tenant_id=dict(type='str', disposition="tenantId"),
+              display_name=dict(type='str', disposition="displayName"),
               details=dict(
                 type='dict',
                 options=dict(
@@ -376,6 +377,7 @@ class AzureRMManagementGroups(AzureRMModuleBaseExt):
 
             response = self.create_update_resource()
 
+            self.results['body'] = self.body
             # if not old_response:
             self.results['changed'] = True
             # else:

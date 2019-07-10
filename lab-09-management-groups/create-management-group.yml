@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+  roles:
+    - ./modules 
+  tasks:
+    - name: Create Management Group
+      azure_rm_managementgroup:
+        group_id: ChildGroup
+        name: ChildGroup
+        properties:
+          tenant_id: "{{ lookup('env', 'AZURE_TENANT') }}"
+          display_name: Child Group
+          details:
+            parent:
+              id: /providers/Microsoft.Management/managementGroups/MyParentGroup
+      register: output
+
+    - debug:
+        var: output
