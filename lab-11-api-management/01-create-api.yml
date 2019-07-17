@@ -22,9 +22,9 @@
           - http
     - name: ApiManagementUpdateApi
       azure_rm_apimanagementapi:
-        resource_group: myResourceGroup
-        service_name: myService
-        api_id: myApi
+        resource_group: {{ "resource_group" }}
+        service_name: {{ "service_name" }}
+        api_id: {{ "api_name" }}
         display_name: Echo API New
         service_url: 'http://echoapi.cloudapp.net/api2'
         path: newecho
