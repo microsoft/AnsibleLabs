@@ -281,6 +281,9 @@ EXAMPLES = '''
     display_name: Echo API New
     service_url: 'http://echoapi.cloudapp.net/api2'
     path: newecho
+    protocols:
+      - https
+      - http
 - name: ApiManagementDeleteApi
   azure_rm_apimanagementapi:
     resource_group: myResourceGroup

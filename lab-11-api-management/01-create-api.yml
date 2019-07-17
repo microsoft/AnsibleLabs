@@ -28,3 +28,6 @@
         display_name: Echo API New
         service_url: 'http://echoapi.cloudapp.net/api2'
         path: newecho
+        protocols:
+          - https
+          - http
