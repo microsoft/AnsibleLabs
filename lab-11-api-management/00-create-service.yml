@@ -12,3 +12,15 @@
         publisher_email: apim@autorestsdk.com
         publisher_name: autorestsdk
         sku_name: Developer
+    - name: ApiManagementUpdateServiceDisableTls10
+      azure_rm_apimanagementservice:
+        resource_group: {{ "resource_group" }}
+        name: {{ "service_name" }}
+        custom_properties:
+          Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls10: 'false'
+    - name: ApiManagementUpdateServicePublisherDetails
+      azure_rm_apimanagementservice:
+        resource_group: {{ "resource_group" }}
+        name: {{ "service_name" }}
+        publisher_email: foobar@live.com
+        publisher_name: Contoso Vnext

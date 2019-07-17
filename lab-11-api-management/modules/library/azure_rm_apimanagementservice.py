@@ -29,6 +29,7 @@ options:
   name:
     description:
       - Resource name.
+    required: true
     type: str
   notification_sender_email:
     description:
@@ -227,7 +228,7 @@ options:
         TLS_RSA_WITH_AES_128_CBC_SHA. For example,
         `Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Ciphers.TLS_RSA_WITH_AES_128_CBC_SHA256`:`false`.
         The default value is `true` for them.
-    type: object
+    type: dict
   certificates:
     description:
       - >-
@@ -296,12 +297,10 @@ options:
     description:
       - Publisher email.
     type: str
-    required: true
   publisher_name:
     description:
       - Publisher name.
     type: str
-    required: true
   public_ip_addresses:
     description:
       - >-
@@ -319,7 +318,6 @@ options:
     description:
       - Name of the Sku.
     type: str
-    required: true
   sku_capacity:
     description:
       - Capacity of the SKU (number of deployed units of the SKU).
@@ -344,11 +342,6 @@ options:
         description:
           - The client tenant id of the identity.
         type: str
-  location:
-    description:
-      - Resource location.
-    type: str
-    required: true
   state:
     description:
       - Assert the state of the ApiManagementService.
@@ -574,7 +567,7 @@ class AzureRMApiManagementService(AzureRMModuleBaseExt):
                 )
             ),
             custom_properties=dict(
-                type='object',
+                type='dict',
                 disposition='/properties/customProperties'
             ),
             certificates=dict(
@@ -628,13 +621,11 @@ class AzureRMApiManagementService(AzureRMModuleBaseExt):
             ),
             publisher_email=dict(
                 type='str',
-                disposition='/properties/publisherEmail',
-                required=True
+                disposition='/properties/publisherEmail'
             ),
             publisher_name=dict(
                 type='str',
-                disposition='/properties/publisherName',
-                required=True
+                disposition='/properties/publisherName'
             ),
             public_ip_addresses=dict(
                 type='list',
@@ -651,8 +642,7 @@ class AzureRMApiManagementService(AzureRMModuleBaseExt):
                          'Standard',
                          'Premium',
                          'Basic',
-                         'Consumption'],
-                required=True
+                         'Consumption']
             ),
             sku_capacity=dict(
                 type='int',
