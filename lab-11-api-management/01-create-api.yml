@@ -1,0 +1,30 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateApi
+      azure_rm_apimanagementapi:
+        resource_group: {{ "resource_group" }}
+        service_name: {{ "service_name" }}
+        api_id: {{ "api_name" }}
+        description: apidescription5200
+        subscription_key_parameter_names:
+          header: header4520
+          query: query3037
+        display_name: apiname1463
+        service_url: 'http://newechoapi.cloudapp.net/api'
+        path: newapiPath
+        protocols:
+          - https
+          - http
+    - name: ApiManagementUpdateApi
+      azure_rm_apimanagementapi:
+        resource_group: myResourceGroup
+        service_name: myService
+        api_id: myApi
+        display_name: Echo API New
+        service_url: 'http://echoapi.cloudapp.net/api2'
+        path: newecho
