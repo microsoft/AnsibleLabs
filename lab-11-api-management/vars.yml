@@ -1,3 +1,5 @@
 resource_group: myResourceGroup
 service_name: testServiceLqy
+publisher_email: apim@autorestsdk.com
+publisher_name: autorestsdk
 api_name: myApi

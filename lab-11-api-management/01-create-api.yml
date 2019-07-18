@@ -6,7 +6,7 @@
     - ./modules 
   tasks:
     - name: ApiManagementCreateApi
-      azure_rm_apimanagementapi:
+      azure.rm.apimanagementapi:
         resource_group: {{ "resource_group" }}
         service_name: {{ "service_name" }}
         api_id: {{ "api_name" }}
@@ -17,17 +17,6 @@
         display_name: apiname1463
         service_url: 'http://newechoapi.cloudapp.net/api'
         path: newapiPath
-        protocols:
-          - https
-          - http
-    - name: ApiManagementUpdateApi
-      azure_rm_apimanagementapi:
-        resource_group: {{ "resource_group" }}
-        service_name: {{ "service_name" }}
-        api_id: {{ "api_name" }}
-        display_name: Echo API New
-        service_url: 'http://echoapi.cloudapp.net/api2'
-        path: newecho
         protocols:
           - https
           - http
