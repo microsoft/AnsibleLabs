@@ -7,9 +7,9 @@
   tasks:
     - name: ApiManagementCreateApi
       azure.rm.apimanagementapi:
-        resource_group: {{ "resource_group" }}
-        service_name: {{ "service_name" }}
-        api_id: {{ "api_name" }}
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
         description: apidescription5200
         subscription_key_parameter_names:
           header: header4520

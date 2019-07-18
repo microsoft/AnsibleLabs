@@ -12,10 +12,10 @@
 ```
 - name: ApiManagementCreateService
   azure.rm.apimanagementservice:
-    resource_group: {{ "resource_group" }}
-    name: {{ "service_name" }}
-    publisher_email: {{ "publisher_email" }}
-    publisher_name: {{ "publisher_name" }}
+    resource_group: "{{ resource_group }}"
+    name: "{{ service_name }}"
+    publisher_email: "{{ publisher_email }}"
+    publisher_name: "{{ publisher_name }}"
     sku_name: Developer
 ```
 
@@ -25,9 +25,9 @@
 ```
 - name: ApiManagementCreateApi
   azure.rm.apimanagementapi:
-    resource_group: {{ "resource_group" }}
-    service_name: {{ "service_name" }}
-    api_id: {{ "api_name" }}
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    api_id: "{{ api_name }}"
     description: apidescription5200
     subscription_key_parameter_names:
       header: header4520

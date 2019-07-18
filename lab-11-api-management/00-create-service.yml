@@ -7,8 +7,8 @@
   tasks:
     - name: ApiManagementCreateService
       azure.rm.apimanagementservice:
-        resource_group: {{ "resource_group" }}
-        name: {{ "service_name" }}
-        publisher_email: {{ "publisher_email" }}
-        publisher_name: {{ "publisher_name" }}
+        resource_group: "{{ resource_group }}"
+        name: "{{ service_name }}"
+        publisher_email: "{{ publisher_email }}"
+        publisher_name: "{{ publisher_name }}"
         sku_name: Developer
