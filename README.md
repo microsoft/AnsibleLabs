@@ -1,6 +1,7 @@
 # Ansible Deployment Labs for Microsoft Azure 
 
-This is a content of Ansible Labs originally presented at Red Hat Summit 2019.
+This is a collection of Ansible Labs originally presented at Red Hat Summit 2019. All labs perform various actions on Microsoft Azure using Ansible. Ansible >= 2.8 is required as well as the Ansible Modules for Azure.
+
 
 <b>Deploy and scale Microsoft Azure infrastructures and applications with Red Hat Ansible Automation.</b>
 <HR>
