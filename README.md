@@ -2,7 +2,7 @@
 
 This is a collection of Ansible Labs originally presented at Red Hat Summit 2019. All labs perform various actions on Microsoft Azure using Ansible. Ansible >= 2.8 is required as well as the Ansible Modules for Azure.
 
-<img src="./images/microsoft-cloud-workshop-mcw-logo.png" width="200"> <img src="./images/azure-logo.png" width="300"> <img src="./images/ansible-logo.png" width="300">
+<img align="left" src="./images/azure-logo.png" width="300"> <img align="right" src="./images/ansible-logo.png" width="300">
 
 <b>Deploy and scale Microsoft Azure infrastructures and applications with Red Hat Ansible Automation.</b>
 <HR>
