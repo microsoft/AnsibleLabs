@@ -7,7 +7,6 @@ This is a collection of Ansible Labs originally presented at Red Hat Summit 2019
 <br><br><br><hr>
 <b>Deploy and scale Microsoft Azure infrastructures and applications with Red Hat Ansible Automation.</b>
 <HR>
-<b>Attendees will have hands-on access to Azure to perform the following tasks which build on one another:</b>
 
 	* Lab 1: Deploying applications with AKS
 	* Lab 2: Configuring a serverless application using Azure Functions
