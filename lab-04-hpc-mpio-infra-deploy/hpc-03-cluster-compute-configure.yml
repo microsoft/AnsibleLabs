@@ -2,7 +2,7 @@
   hosts: localhost
   connection: local
   vars_files:
-    - ./vars-myvars.yml
+    - ../vars-myvars.yml
 
   tasks:
 
@@ -95,7 +95,7 @@
   remote_user: "{{ admin_username }}"
   become: yes  
   vars_files:
-    - ./vars-myvars.yml
+    - ../vars-myvars.yml
 
   tasks:
  
@@ -190,7 +190,7 @@
   remote_user: "{{ admin_username }}"
   become: yes
   vars_files:
-    - ./vars-myvars.yml
+    - ../vars-myvars.yml
 
   tasks:
 

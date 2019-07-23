@@ -1,7 +1,7 @@
 - name: Create Virtual Machine Scale Set for Mattermost
   hosts: localhost
   vars_files:
-    - ./vars-myvars.yml
+    - ../vars-myvars.yml
 
   tasks:
 

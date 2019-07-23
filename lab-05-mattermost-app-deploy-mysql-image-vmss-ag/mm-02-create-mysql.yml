@@ -2,7 +2,7 @@
   hosts: localhost
   connection: local
   vars_files:
-    - ./vars-myvars.yml
+    - ../vars-myvars.yml
 
   tasks:
   - name: Create MySQL Server for Mattermost Database

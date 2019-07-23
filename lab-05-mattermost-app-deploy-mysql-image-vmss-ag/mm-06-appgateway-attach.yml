@@ -1,7 +1,7 @@
 - name: Connect Mattermost Application Gateway to VMSS
   hosts: localhost
   vars_files:
-    - ./vars-myvars.yml
+    - ../vars-myvars.yml
   roles:
     - ../modules
   tasks:
