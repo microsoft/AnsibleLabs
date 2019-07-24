@@ -8,11 +8,11 @@ This is a collection of Ansible Labs originally presented at Red Hat Summit 2019
 <b>Deploy and scale Microsoft Azure infrastructures and applications with Red Hat Ansible Automation.</b>
 <HR>
 
-	* Lab 1: Deploying applications with AKS
-	* Lab 2: Configuring a serverless application using Azure Functions
+	* Lab 1: Configuring an IaaS application on a virtual machine, connecting MySQL and scaling
+	* Lab 2: Provisioning an MPIO-Capable HPC Infrastructure and testing Infiniband Latency
 	* Lab 3: Building an HDInsight Cluster and performing Big Data queries
-	* Lab 4: Provisioning an MPIO-Capable HPC Infrastructure and testing Infiniband Latency
-	* Lab 5: Configuring an IaaS application on a virtual machine, connecting MySQL and scaling
+	* Lab 4: Deploying applications with AKS
+	* Lab 5: Configuring a serverless application using Azure Functions
 	* Lab 6: Containerize a NodeJS Application, load to ACR and deploy as an Azure Web App
 	* Lab 7: Using Azure Shared Image Gallery
 	* Lab 9: Leveraging Azure Management Groups to control Azure subscriptions
