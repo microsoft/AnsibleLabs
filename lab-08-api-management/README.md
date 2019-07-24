@@ -1,5 +1,5 @@
 
-# Lab 11 - Api Management
+# Lab 08 - Api Management
 
 ## Summary of Lab
 
