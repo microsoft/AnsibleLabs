@@ -1,3 +1,8 @@
 resource_group: myResourceGroup
 location: westus
-vault_network_name: testVault
+vault_network_name: myRecoveryVault
+target_network_name: myTargetVnet
+target_failover_network_name: myTargetFailoverVnet
+target_storage_account_name: mytargetstorage
+target_cache_storage_account_name: mytargetcachestorage
+availability_set_name: myAvailabilitySet

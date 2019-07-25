@@ -2,21 +2,49 @@
 - hosts: localhost
   vars_files:
     - vars.yml
+  roles:
+    - ./modules 
   tasks:
+    - name: Create resource group if doesn't exist
+      azure_rm_resourcegroup:
+        name: "{{ resource_group }}"
+        location: "{{ location }}"
+
     - name: Create or Update Recovery Services vault
       azure_rm_recoveryservicesvault:
         resource_group: "{{ resource_group }}"
         name: "{{ vault_network_name }}"
-        sku:
-          name: Standard
+        sku_name: Standard
         location: "{{ location }}"  
-    - name: Get Recovery Services Resource
-      azure_rm_recoveryservicesvault_info:
+
+    - name: Create target storage account
+      azure_rm_storageaccount:
         resource_group: "{{ resource_group }}"
-        name: "{{ vault_network_name }}"
-    - name: Delete Recovery Services Vault
-      azure_rm_recoveryservicesvault:
+        name: "{{ target_storage_account_name }}"
+        type: Standard_RAGRS
+
+    - name: Create target cache storage account
+      azure_rm_storageaccount:
         resource_group: "{{ resource_group }}"
-        name: "{{ vault_network_name }}"
-        state: absent
-    
+        name: "{{ target_cache_storage_account_name }}"
+        type: Standard_RAGRS
+
+    - name: Target virtual network
+      azure_rm_virtualnetwork:
+        resource_group: "{{ resource_group }}"
+        name: "{{ target_virtual_network_name }}"
+        address_prefixes: "10.0.0.0/16"
+
+    - name: Target failover virtual network
+      azure_rm_virtualnetwork:
+        resource_group: "{{ resource_group }}"
+        name: "{{ target_failover_virtual_network_name }}"
+        address_prefixes: "10.0.0.0/16"
+
+    - name: Create an availability set with advanced options
+      azure_rm_availabilityset:
+        resource_group: "{{ resource_group }}"
+        name: "{{ availability_set_name }}"
+        platform_update_domain_count: 5
+        platform_fault_domain_count: 3
+        sku: Aligned
