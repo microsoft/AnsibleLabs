@@ -25,7 +25,51 @@ az apimgmt create --resource-group "rg1" --name "apimService1" --publisher-email
 ## Step 1 - Create Api
 
 ```
+az apimgmt api create --resource-group "rg1" --service-name "apimService1" --api-id \
+"petstore" --path "petstore" --value "http://petstore.swagger.io/v2/swagger.json" \
+--format "swagger-link-json" --protocols "[\"http\",\"https\"]" --display-name "Pet Store API"
 ```
+
+You will see following response:
+
+```
+{
+  "apiRevision": "1",
+  "apiRevisionDescription": null,
+  "apiType": null,
+  "apiVersion": null,
+  "apiVersionDescription": null,
+  "apiVersionSet": null,
+  "apiVersionSetId": null,
+  "authenticationSettings": {
+    "oAuth2": null,
+    "openid": null,
+    "subscriptionKeyRequired": null
+  },
+  "description": null,
+  "displayName": "Pet Store API",
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/apis/petstore",
+  "isCurrent": true,
+  "isOnline": null,
+  "name": "petstore",
+  "path": "petstore",
+  "protocols": [
+    "http",
+    "https"
+  ],
+  "resourceGroup": "rg1",
+  "serviceUrl": null,
+  "sourceApiId": null,
+  "subscriptionKeyParameterNames": {
+    "header": "Ocp-Apim-Subscription-Key",
+    "query": "subscription-key"
+  },
+  "subscriptionRequired": null,
+  "type": "Microsoft.ApiManagement/service/apis"
+}
+```
+
+
 
 ## Clean Up
 
