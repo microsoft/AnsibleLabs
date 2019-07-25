@@ -93,6 +93,312 @@ The response looks as follows:
 }
 ```
 
+## Step XX - API Operation
+
+### Create API Operation
+
+```
+az apimgmt api operation create --resource-group "rg1" --service-name "apimService1" \
+--api-id "petstore" --operation-id "newoperations" --description \
+"This can only be done by the logged in user." --display-name "createUser2" --method \
+"POST" --url-template "/user1"
+```
+
+```
+{
+  "description": "This can only be done by the logged in user.",
+  "displayName": "createUser2",
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/apis/petstore/operations/newoperations",
+  "method": "POST",
+  "name": "newoperations",
+  "policies": null,
+  "request": {
+    "description": null,
+    "headers": [],
+    "queryParameters": [],
+    "representations": []
+  },
+  "resourceGroup": "rg1",
+  "responses": [],
+  "templateParameters": [],
+  "type": "Microsoft.ApiManagement/service/apis/operations",
+  "urlTemplate": "/user1"
+}
+```
+
+> Renamed --api-id to "petstore"
+
+### Create API Operation Policy
+
+```
+az apimgmt api operation policy create --resource-group "rg1" --service-name \
+"apimService1" --api-id "petstore" --operation-id \
+"newoperations" --policy-id "policy" --value "<policies> <inbound /> <backend>
+    <forward-request />  </backend>  <outbound /></policies>" --format "xml"
+```
+
+```
+{
+  "format": "xml",
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/apis/petstore/operations/newoperations/policies/policy",
+  "name": "policy",
+  "resourceGroup": "rg1",
+  "type": "Microsoft.ApiManagement/service/apis/operations/policies",
+  "value": "<policies>\r\n\t<inbound />\r\n\t<backend>\r\n\t\t<forward-request />\r\n\t</backend>\r\n\t<outbound />\r\n</policies>"
+}
+```
+
+> Needed to change --operation-id to "newoperations" inside xml and --api-id to "petstore"
+
+### Create API Policy
+
+```
+az apimgmt policy create --resource-group "rg1" --service-name "apimService1" --policy-id \
+"policy" --value "<policies>\r\n  <inbound />\r\n  <backend>\r\n    <forward-request />\r\
+n  </backend>\r\n  <outbound />\r\n</policies>" --format "xml"
+```
+
+```
+{
+  "format": "xml",
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/policies/policy",
+  "name": "policy",
+  "resourceGroup": "rg1",
+  "type": "Microsoft.ApiManagement/service/policies",
+  "value": "<policies>\\r\\n  <inbound />\\r\\n  <backend>\\r\\n    <forward-request />\\r        n  </backend>\\r\\n  <outbound />\\r\\n</policies>"
+}
+```
+
+### Create API Diagnostic
+
+az apimgmt api diagnostic create --resource-group "rg1" --service-name "apimService1" \
+--api-id "petstore" --diagnostic-id "applicationinsights" --always-log \
+"allErrors" --logger-id "/loggers/myloggerins"
+
+> This needs logger 
+> /loggers/..... --> renamed to "/loggers/mylogger"
+> Diagnostic does not accept AzureEventHub logger
+
+{
+  "alwaysLog": "allErrors",
+  "backend": null,
+  "enableHttpCorrelationHeaders": true,
+  "frontend": null,
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/apis/petstore/diagnostics/applicationinsights",
+  "loggerId": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/loggers/myloggerins",
+  "name": "applicationinsights",
+  "resourceGroup": "rg1",
+  "sampling": null,
+  "type": "Microsoft.ApiManagement/service/apis/diagnostics"
+}
+
+## Create Diagnostic
+
+        az apimgmt diagnostic create --resource-group "rg1" --service-name "apimService1" \
+        --diagnostic-id "applicationinsights" --always-log "allErrors" --logger-id \
+        "/loggers/myloggerins" --debug
+
+{
+  "alwaysLog": "allErrors",
+  "backend": null,
+  "enableHttpCorrelationHeaders": true,
+  "frontend": null,
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/diagnostics/applicationinsights",
+  "loggerId": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/loggers/myloggerins",
+  "name": "applicationinsights",
+  "resourceGroup": "rg1",
+  "sampling": null,
+  "type": "Microsoft.ApiManagement/service/diagnostics"
+}
+
+## Create Logger
+
+First you have to create eventhub namespace:
+
+```
+az eventhubs namespace create --resource-group rg1 --name myeventhubzysysy --location \
+westus --tags tag1=value1 tag2=value2 --sku Standard --enable-auto-inflate False --maximum-throughput-units 20 --enable-auto-inflate
+```
+
+> original example was not broken correctly
+> unit must be <=20 (was 30)
+> "Cannot set MaximumThroughputUnits property if AutoInflate is not enabled"
+> Name must be random
+
+```
+{
+  "createdAt": "2019-07-25T13:22:27.107000+00:00",
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.EventHub/namespaces/myeventhubzysysy",
+  "isAutoInflateEnabled": true,
+  "kafkaEnabled": false,
+  "location": "West US",
+  "maximumThroughputUnits": 20,
+  "metricId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx:myeventhubzysysy",
+  "name": "myeventhubzysysy",
+  "provisioningState": "Succeeded",
+  "resourceGroup": "rg1",
+  "serviceBusEndpoint": "https://myeventhubzysysy.servicebus.windows.net:443/",
+  "sku": {
+    "capacity": 1,
+    "name": "Standard",
+    "tier": "Standard"
+  },
+  "tags": {
+    "tag1": "value1",
+    "tag2": "value2"
+  },
+  "type": "Microsoft.EventHub/Namespaces",
+  "updatedAt": "2019-07-25T13:23:17.117000+00:00"
+}
+```
+
+```
+az eventhubs eventhub create --resource-group rg1 --namespace-name myeventhubzysysy \
+--name myeventhub --message-retention 4 --partition-count 15
+```
+
+```
+{
+  "captureDescription": null,
+  "createdAt": "2019-07-25T13:25:28.963000+00:00",
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.EventHub/namespaces/myeventhubzysysy/eventhubs/myeventhub",
+  "location": "West US",
+  "messageRetentionInDays": 4,
+  "name": "myeventhub",
+  "partitionCount": 15,
+  "partitionIds": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14"
+  ],
+  "resourceGroup": "rg1",
+  "status": "Active",
+  "type": "Microsoft.EventHub/Namespaces/EventHubs",
+  "updatedAt": "2019-07-25T13:25:29.380000+00:00"
+}
+```
+
+### Create Authorization Rule
+
+az eventhubs eventhub authorization-rule create --resource-group rg1 \
+--namespace-name myeventhubzysysy --eventhub-name myeventhub --name myauthorule --rights Send
+
+{
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.EventHub/namespaces/myeventhubzysysy/eventhubs/myeventhub/authorizationRules/myauthorule",
+  "location": "West US",
+  "name": "myauthorule",
+  "resourceGroup": "rg1",
+  "rights": [
+    "Send"
+  ],
+  "type": "Microsoft.EventHub/Namespaces/EventHubs/AuthorizationRules"
+}
+
+### Get Keys
+
+ az eventhubs eventhub authorization-rule keys list --resource-group rg1 \
+ --namespace-name myeventhubzysysy --eventhub-name myeventhub --name myauthorule
+
+{
+  "aliasPrimaryConnectionString": null,
+  "aliasSecondaryConnectionString": null,
+  "keyName": "myauthorule",
+  "primaryConnectionString": "Endpoint=sb://myeventhubzysysy.servicebus.windows.net/;SharedAccessKeyName=myauthorule;SharedAccessKey=dlnQ5grFrcTPvj+mznKUlb+BzD5wFpwxyvPMa21ddIs=;EntityPath=myeventhub",
+  "primaryKey": "dlnQ5grFrcTPvj+mznKUlb+BzD5wFpwxyvPMa21ddIs=",
+  "secondaryConnectionString": "Endpoint=sb://myeventhubzysysy.servicebus.windows.net/;SharedAccessKeyName=myauthorule;SharedAccessKey=zY/rGgpruNGaQzQidd+nTbTw8zKObaZTNBFqMx6dqzg=;EntityPath=myeventhub",
+  "secondaryKey": "zY/rGgpruNGaQzQidd+nTbTw8zKObaZTNBFqMx6dqzg="
+}
+
+### Create Logger
+
+az apimgmt logger create --resource-group "rg1" --service-name "apimService1" --logger-id \
+"mylogger" --logger-type "azureEventHub" --description "adding a new logger" --credentials "{\"name\":\"myeventhub\",\"connectionString\": \"Endpoint=sb://myeventhubzysysy.servicebus.windows.net/;SharedAccessKeyName=myauthorule;SharedAccessKey=zY/rGgpruNGaQzQidd+nTbTw8zKObaZTNBFqMx6dqzg=;EntityPath=myeventhub\"}"
+
+{
+  "credentials": {
+    "connectionString": "{{Logger-Credentials-5d39b3464187911230654d5a}}",
+    "name": "myeventhub"
+  },
+  "description": "adding a new logger",
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/loggers/mylogger",
+  "isBuffered": true,
+  "loggerType": "azureEventHub",
+  "name": "mylogger",
+  "resourceGroup": "rg1",
+  "resourceId": null,
+  "type": "Microsoft.ApiManagement/service/loggers"
+}
+
+> This needs to be less complex (name, endpoint pramameters?)
+
+> Create logger from insights
+
+az apimgmt logger create --resource-group "rg1" --service-name "apimService1" --logger-id \
+"myloggerins" --logger-type "applicationInsights" --description "adding a new logger" --credentials "{\"instrumentationKey\":\"0c5fa0bc-386c-406b-92bd-ffbd862f8a1d\"}"
+
+{
+  "credentials": {
+    "instrumentationKey": "{{Logger-Credentials-5d39b9b74187911230654d5d}}"
+  },
+  "description": "adding a new logger",
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/loggers/myloggerins",
+  "isBuffered": true,
+  "loggerType": "applicationInsights",
+  "name": "myloggerins",
+  "resourceGroup": "rg1",
+  "resourceId": null,
+  "type": "Microsoft.ApiManagement/service/loggers"
+}
+
+## Step XX - Create Backend
+
+```
+az apimgmt backend create --resource-group "rg1" --service-name "apimService1" \
+--backend-id "sfbackend" --description "Service Fabric Test App 1" --url \
+"fabric:/mytestapp/mytestservice" --protocol "http"
+```
+
+```
+{
+  "credentials": null,
+  "description": "Service Fabric Test App 1",
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/backends/sfbackend",
+  "name": "sfbackend",
+  "properties": null,
+  "protocol": "http",
+  "proxy": null,
+  "resourceGroup": "rg1",
+  "resourceId": null,
+  "title": null,
+  "tls": null,
+  "type": "Microsoft.ApiManagement/service/backends",
+  "url": "fabric:/mytestapp/mytestservice"
+}
+```
+
+## Step XX - Adding Certificate
+
+```
+az apimgmt certificate create --resource-group "rg1" --service-name "apimService1" \
+--certificate-id "tempcert" --data \
+"MIIDsTCCApmgAwIB6s+k2it5iRCiWZXKgA4AsCQGRTUDQ==" --password \
+"somepassword"
+```
+
+> This sample needs to be tested with proper certificate
+
 ## Step XX - Create Versionset
 
 ```
@@ -209,7 +515,7 @@ az apimgmt group user create --resource-group "rg1" --service-name "apimService1
 
 ## Working with Tags
 
-Create a tag:
+### Create a tag
 
 ```
 az apimgmt tag create --resource-group "rg1" --service-name "apimService1" --tag-id \
@@ -227,6 +533,31 @@ Response:
   "type": "Microsoft.ApiManagement/service/tags"
 }
 ```
+
+### Create API Tag Description
+
+```
+az apimgmt api tagdescription create --resource-group "rg1" --service-name "apimService1" \
+--api-id "petstore" --tag-id "tagId1" --description "Some description that
+    will be displayed for operation's tag if the tag is assigned to operation of the API" \
+--external-docs-url "http://some.url/additionaldoc" --external-docs-description \
+"Description of the external docs resource"
+```
+
+```
+{
+  "description": "Some description that\n    will be displayed for operation's tag if the tag is assigned to operation of the API",
+  "displayName": "tag1",
+  "externalDocsDescription": "Description of the external docs resource",
+  "externalDocsUrl": "http://some.url/additionaldoc",
+  "id": "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/tags/tagId1",
+  "name": "tagId1",
+  "resourceGroup": "rg1",
+  "type": "Microsoft.ApiManagement/service/apis/tagDescriptions"
+}
+```
+
+> Note: --api-id --> "petstore"
 
 ## Working with Notifications
 
