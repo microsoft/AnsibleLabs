@@ -15,9 +15,20 @@ It's experimental in several ways:
 ## Pre-Requisites
 
 ## Step 0 - Create Service
+
 ```
+az apimgmt create --resource-group "rg1" --name "apimService1" --publisher-email \
+"apim@autorestsdk.com" --publisher-name "autorestsdk" --sku-name "Developer" \
+--sku-capacity "1" --location "Central US"
 ```
 
 ## Step 1 - Create Api
+
 ```
+```
+
+## Clean Up
+
+```
+az apimgmt delete --resource-group "rg1" --name "apimService1"
 ```
