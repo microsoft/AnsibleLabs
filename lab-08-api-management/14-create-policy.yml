@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreatePolicy
+      azure.rm.apimanagementpolicy:                                                                                             
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        policy_id: policy
+        value: "<policies>\r\n  <inbound />\r\n  <backend>\r\n    <forward-request />\r\n  </backend>\r\n  <outbound />\r\n</policies>"
+        format: xml

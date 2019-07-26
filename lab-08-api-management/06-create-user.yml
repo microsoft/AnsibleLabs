@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateUser
+      azure.rm.apimanagementuser:                                                                                                                               resource_group: myResourceGroup
+        service_name: "{{ service_name }}"
+        user_id: "{{ user_name }}"
+        email: foobar@outlook.com
+        first_name: foo
+        last_name: bar
+        confirmation: signup

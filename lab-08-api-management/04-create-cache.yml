@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateCache
+      azure.rm.apimanagementcache:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        cache_id: westindia
+        description: Update Cache in west India
+        connection_string: 'contoso5.redis.cache.windows.net,ssl=true,password=...'
+        resource_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.Cache/Redis/contoso5

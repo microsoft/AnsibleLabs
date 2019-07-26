@@ -15,7 +15,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: azure_rm_apimanagementservice
+module: apimanagementservice
 version_added: '2.9'
 short_description: Manage Azure ApiManagementService instance.
 description:
@@ -362,26 +362,26 @@ author:
 
 EXAMPLES = '''
 - name: ApiManagementCreateService
-  azure_rm_apimanagementservice:
+  azure.rm.apimanagementservice:
     resource_group: myResourceGroup
     name: myService
     publisher_email: apim@autorestsdk.com
     publisher_name: autorestsdk
     sku_name: Developer
 - name: ApiManagementUpdateServiceDisableTls10
-  azure_rm_apimanagementservice:
+  azure.rm.apimanagementservice:
     resource_group: myResourceGroup
     name: myService
     custom_properties:
       Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls10: 'false'
 - name: ApiManagementUpdateServicePublisherDetails
-  azure_rm_apimanagementservice:
+  azure.rm.apimanagementservice:
     resource_group: myResourceGroup
     name: myService
     publisher_email: foobar@live.com
     publisher_name: Contoso Vnext
 - name: ApiManagementServiceDeleteService
-  azure_rm_apimanagementservice:
+  azure.rm.apimanagementservice:
     resource_group: myResourceGroup
     name: myService
     state: absent
@@ -786,7 +786,6 @@ class AzureRMApiManagementService(AzureRMModuleBaseExt):
 
     def create_update_resource(self):
         # self.log('Creating / Updating the ApiManagementService instance {0}'.format(self.))
-
         try:
             response = self.mgmt_client.query(self.url,
                                               'PUT',

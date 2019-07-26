@@ -1,0 +1,17 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateApiTagDescription
+      azure.rm.apimanagementapitagdescription:                                                                                                                  resource_group: myResourceGroup
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        tag_id: tag1
+        description: >-
+          Some description that will be displayed for operation's tag if the tag is
+          assigned to operation of the API
+        external_docs_url: 'http://some.url/additionaldoc'
+        external_docs_description: Description of the external docs resource

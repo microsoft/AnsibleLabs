@@ -15,30 +15,37 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = '''
 ---
-module: azure_rm_apimanagementapi
+module: apimanagementproductapi
 version_added: '2.9'
-short_description: Manage Azure Api instance.
+short_description: Manage Azure ProductApi instance.
 description:
-  - 'Create, update and delete instance of Azure Api.'
+  - 'Create, update and delete instance of Azure ProductApi.'
 options:
   resource_group:
     description:
       - The name of the resource group.
-    type: str
     required: true
+    type: str
   service_name:
     description:
       - The name of the API Management service.
-    type: str
     required: true
+    type: str
+  product_id:
+    description:
+      - >-
+        Product identifier. Must be unique in the current API Management service
+        instance.
+    required: true
+    type: str
   api_id:
     description:
       - >-
         API revision identifier. Must be unique in the current API Management
         service instance. Non-current revision has ;rev=n as a suffix where n is
         the revision number.
-    type: str
     required: true
+    type: str
   description:
     description:
       - Description of the API. May include HTML formatting tags.
@@ -95,13 +102,6 @@ options:
         description:
           - Subscription key query string parameter name.
         type: str
-  type:
-    description:
-      - Resource type for API Management resource.
-    type: str
-    choices:
-      - http
-      - soap
   api_revision:
     description:
       - >-
@@ -115,6 +115,10 @@ options:
   is_current:
     description:
       - Indicates if API revision is current api revision.
+    type: boolean
+  is_online:
+    description:
+      - Indicates if API revision is accessible via the gateway.
     type: boolean
   api_revision_description:
     description:
@@ -147,7 +151,7 @@ options:
       - >-
         Absolute URL of the backend service implementing this API. Cannot be
         more than 2000 characters long.
-      type: str
+    type: str
   path:
     description:
       - >-
@@ -155,15 +159,11 @@ options:
         within the API Management service instance. It is appended to the API
         endpoint base URL specified during the service instance creation to form
         a public URL for this API.
-      type: str
-    required: true
+    type: str
   protocols:
     description:
       - Describes on which protocols the operations in this API can be invoked.
     type: list
-    choices:
-      - http
-      - https
   api_version_set:
     description:
       - Version set details
@@ -189,10 +189,6 @@ options:
             An value that determines where the API Version identifer will be
             located in a HTTP request.
         type: str
-        choices:
-          - Segment
-          - Query
-          - Header
       version_query_name:
         description:
           - >-
@@ -204,49 +200,13 @@ options:
           - >-
             Name of HTTP header parameter that indicates the API Version if
             versioningScheme is set to `header`.
-         type: str
-  value:
-    description:
-      - Content value when Importing an API.
-    type: str
-  format:
-    description:
-      - Format of the Content in which the API is getting imported.
-    type: str
-  choices:
-    - wadl-xml
-    - wadl-link-json
-    - swagger-json
-    - swagger-link-json
-    - wsdl
-    - wsdl-link
-    - openapi
-    - openapi+json
-    - openapi-link
-  wsdl_selector:
-    description:
-      - Criteria to limit import of WSDL to a subset of the document.
-    type: dict
-    suboptions:
-      wsdl_service_name:
-        description:
-          - Name of service to import from WSDL
         type: str
-      wsdl_endpoint_name:
-        description:
-          - Name of endpoint(port) to import from WSDL
-        type: str
-  api_type:
-    description:
-      - >-
-        Type of Api to create. <br> * `http` creates a SOAP to REST API <br> *
-        `soap` creates a SOAP pass-through API.
-    type: str
   state:
     description:
-      - Assert the state of the Api.
-      - Use C(present) to create or update an Api and C(absent) to delete it.
-    type: str
+      - Assert the state of the ProductApi.
+      - >-
+        Use C(present) to create or update an ProductApi and C(absent) to delete
+        it.
     default: present
     choices:
       - absent
@@ -255,41 +215,25 @@ extends_documentation_fragment:
   - azure
 author:
   - Zim Kalinowski (@zikalino)
+
 '''
 
 EXAMPLES = '''
-- name: ApiManagementCreateApi
-  azure_rm_apimanagementapi:
+- name: ApiManagementCreateProductApi
+  azure.rm.apimanagementproductapi:
     resource_group: myResourceGroup
     service_name: myService
+    product_id: myProduct
     api_id: myApi
-    description: apidescription5200
-    subscription_key_parameter_names:
-      header: header4520
-      query: query3037
-    display_name: apiname1463
-    service_url: 'http://newechoapi.cloudapp.net/api'
     path: newapiPath
-    protocols:
-      - https
-      - http
-- name: ApiManagementUpdateApi
-  azure_rm_apimanagementapi:
+- name: ApiManagementDeleteProductApi
+  azure.rm.apimanagementproductapi:
     resource_group: myResourceGroup
     service_name: myService
-    api_id: myApi
-    display_name: Echo API New
-    service_url: 'http://echoapi.cloudapp.net/api2'
-    path: newecho
-    protocols:
-      - https
-      - http
-- name: ApiManagementDeleteApi
-  azure_rm_apimanagementapi:
-    resource_group: myResourceGroup
-    service_name: myService
+    product_id: myProduct
     api_id: myApi
     state: absent
+
 '''
 
 RETURN = '''
@@ -299,6 +243,25 @@ id:
   returned: always
   type: str
   sample: null
+name:
+  description:
+    - Resource name.
+  returned: always
+  type: str
+  sample: null
+type:
+  description:
+    - Resource type for API Management resource.
+  returned: always
+  type: str
+  sample: null
+properties:
+  description:
+    - Api entity contract properties.
+  returned: always
+  type: dict
+  sample: null
+
 '''
 
 import time
@@ -310,7 +273,7 @@ from copy import deepcopy
 try:
     from msrestazure.azure_exceptions import CloudError
 except ImportError:
-    # This is handled in azure_rm_common
+    # this is handled in azure_rm_common
     pass
 
 
@@ -318,7 +281,7 @@ class Actions:
     NoAction, Create, Update, Delete = range(4)
 
 
-class AzureRMApi(AzureRMModuleBaseExt):
+class AzureRMProductApi(AzureRMModuleBaseExt):
     def __init__(self):
         self.module_arg_spec = dict(
             resource_group=dict(
@@ -331,6 +294,12 @@ class AzureRMApi(AzureRMModuleBaseExt):
                 type='str',
                 updatable=False,
                 disposition='serviceName',
+                required=True
+            ),
+            product_id=dict(
+                type='str',
+                updatable=False,
+                disposition='productId',
                 required=True
             ),
             api_id=dict(
@@ -411,6 +380,10 @@ class AzureRMApi(AzureRMModuleBaseExt):
                 type='boolean',
                 disposition='/properties/isCurrent'
             ),
+            is_online=dict(
+                type='boolean',
+                disposition='/properties/isOnline'
+            ),
             api_revision_description=dict(
                 type='str',
                 disposition='/properties/apiRevisionDescription'
@@ -421,10 +394,7 @@ class AzureRMApi(AzureRMModuleBaseExt):
             ),
             api_version_set_id=dict(
                 type='str',
-                disposition='/properties/apiVersionSetId',
-                pattern=('//subscriptions/{{ subscription_id }}/resourceGroups'
-                         '/{{ resource_group }}/providers/Microsoft.ApiManagement/service'
-                         '/{{ service_name }}/apiVersionSets/{{ name }}')
+                disposition='/properties/apiVersionSetId'
             ),
             subscription_required=dict(
                 type='boolean',
@@ -432,10 +402,7 @@ class AzureRMApi(AzureRMModuleBaseExt):
             ),
             source_api_id=dict(
                 type='str',
-                disposition='/properties/sourceApiId',
-                pattern=('//subscriptions/{{ subscription_id }}/resourceGroups'
-                         '/{{ resource_group }}/providers/Microsoft.ApiManagement/service'
-                         '/{{ service_name }}/apis/{{ name }}')
+                disposition='/properties/sourceApiId'
             ),
             display_name=dict(
                 type='str',
@@ -447,8 +414,7 @@ class AzureRMApi(AzureRMModuleBaseExt):
             ),
             path=dict(
                 type='str',
-                disposition='/properties/*',
-                required=True
+                disposition='/properties/*'
             ),
             protocols=dict(
                 type='list',
@@ -486,43 +452,6 @@ class AzureRMApi(AzureRMModuleBaseExt):
                     )
                 )
             ),
-            value=dict(
-                type='str',
-                disposition='/properties/*'
-            ),
-            format=dict(
-                type='str',
-                disposition='/properties/*',
-                choices=['wadl-xml',
-                         'wadl-link-json',
-                         'swagger-json',
-                         'swagger-link-json',
-                         'wsdl',
-                         'wsdl-link',
-                         'openapi',
-                         'openapi+json',
-                         'openapi-link']
-            ),
-            wsdl_selector=dict(
-                type='dict',
-                disposition='/properties/wsdlSelector',
-                options=dict(
-                    wsdl_service_name=dict(
-                        type='str',
-                        disposition='wsdlServiceName'
-                    ),
-                    wsdl_endpoint_name=dict(
-                        type='str',
-                        disposition='wsdlEndpointName'
-                    )
-                )
-            ),
-            api_type=dict(
-                type='str',
-                disposition='/properties/apiType',
-                choices=['SoapToRest',
-                         'SoapPassThrough']
-            ),
             state=dict(
                 type='str',
                 default='present',
@@ -532,7 +461,9 @@ class AzureRMApi(AzureRMModuleBaseExt):
 
         self.resource_group = None
         self.service_name = None
+        self.product_id = None
         self.api_id = None
+        self.properties = None
 
         self.results = dict(changed=False)
         self.mgmt_client = None
@@ -547,9 +478,9 @@ class AzureRMApi(AzureRMModuleBaseExt):
         self.header_parameters = {}
         self.header_parameters['Content-Type'] = 'application/json; charset=utf-8'
 
-        super(AzureRMApi, self).__init__(derived_arg_spec=self.module_arg_spec,
-                                         supports_check_mode=True,
-                                         supports_tags=True)
+        super(AzureRMProductApi, self).__init__(derived_arg_spec=self.module_arg_spec,
+                                                supports_check_mode=True,
+                                                supports_tags=True)
 
     def exec_module(self, **kwargs):
         for key in list(self.module_arg_spec.keys()):
@@ -566,6 +497,8 @@ class AzureRMApi(AzureRMModuleBaseExt):
         self.mgmt_client = self.get_mgmt_svc_client(GenericRestClient,
                                                     base_url=self._cloud_environment.endpoints.resource_manager)
 
+        resource_group = self.get_resource_group(self.resource_group)
+
         self.url = ('/subscriptions' +
                     '/{{ subscription_id }}' +
                     '/resourceGroups' +
@@ -574,24 +507,27 @@ class AzureRMApi(AzureRMModuleBaseExt):
                     '/Microsoft.ApiManagement' +
                     '/service' +
                     '/{{ service_name }}' +
+                    '/products' +
+                    '/{{ product_name }}' +
                     '/apis' +
                     '/{{ api_name }}')
         self.url = self.url.replace('{{ subscription_id }}', self.subscription_id)
         self.url = self.url.replace('{{ resource_group }}', self.resource_group)
         self.url = self.url.replace('{{ service_name }}', self.service_name)
+        self.url = self.url.replace('{{ product_name }}', self.product_id)
         self.url = self.url.replace('{{ api_name }}', self.api_id)
 
         old_response = self.get_resource()
 
         if not old_response:
-            self.log("Api instance doesn't exist")
+            self.log("ProductApi instance doesn't exist")
 
             if self.state == 'absent':
                 self.log("Old instance didn't exist")
             else:
                 self.to_do = Actions.Create
         else:
-            self.log('Api instance already exists')
+            self.log('ProductApi instance already exists')
 
             if self.state == 'absent':
                 self.to_do = Actions.Delete
@@ -600,11 +536,12 @@ class AzureRMApi(AzureRMModuleBaseExt):
                 self.create_compare_modifiers(self.module_arg_spec, '', modifiers)
                 self.results['modifiers'] = modifiers
                 self.results['compare'] = []
+                self.create_compare_modifiers(self.module_arg_spec, '', modifiers)
                 if not self.default_compare(modifiers, self.body, old_response, '', self.results):
                     self.to_do = Actions.Update
 
         if (self.to_do == Actions.Create) or (self.to_do == Actions.Update):
-            self.log('Need to Create / Update the Api instance')
+            self.log('Need to Create / Update the ProductApi instance')
 
             if self.check_mode:
                 self.results['changed'] = True
@@ -618,7 +555,7 @@ class AzureRMApi(AzureRMModuleBaseExt):
             #     self.results['changed'] = old_response.__ne__(response)
             self.log('Creation / Update done')
         elif self.to_do == Actions.Delete:
-            self.log('Api instance deleted')
+            self.log('ProductApi instance deleted')
             self.results['changed'] = True
 
             if self.check_mode:
@@ -631,17 +568,20 @@ class AzureRMApi(AzureRMModuleBaseExt):
             while self.get_resource():
                 time.sleep(20)
         else:
-            self.log('Api instance unchanged')
+            self.log('ProductApi instance unchanged')
             self.results['changed'] = False
             response = old_response
 
         if response:
            self.results["id"] = response["id"]
+           self.results["name"] = response["name"]
+           self.results["type"] = response["type"]
+           self.results["properties"] = response["properties"]
 
         return self.results
 
     def create_update_resource(self):
-        # self.log('Creating / Updating the Api instance {0}'.format(self.))
+        # self.log('Creating / Updating the ProductApi instance {0}'.format(self.))
 
         try:
             response = self.mgmt_client.query(self.url,
@@ -653,8 +593,8 @@ class AzureRMApi(AzureRMModuleBaseExt):
                                               600,
                                               30)
         except CloudError as exc:
-            self.log('Error attempting to create the Api instance.')
-            self.fail('Error creating the Api instance: {0}'.format(str(exc)))
+            self.log('Error attempting to create the ProductApi instance.')
+            self.fail('Error creating the ProductApi instance: {0}'.format(str(exc)))
 
         try:
             response = json.loads(response.text)
@@ -665,7 +605,7 @@ class AzureRMApi(AzureRMModuleBaseExt):
         return response
 
     def delete_resource(self):
-        # self.log('Deleting the Api instance {0}'.format(self.))
+        # self.log('Deleting the ProductApi instance {0}'.format(self.))
         try:
             response = self.mgmt_client.query(self.url,
                                               'DELETE',
@@ -676,13 +616,13 @@ class AzureRMApi(AzureRMModuleBaseExt):
                                               600,
                                               30)
         except CloudError as e:
-            self.log('Error attempting to delete the Api instance.')
-            self.fail('Error deleting the Api instance: {0}'.format(str(e)))
+            self.log('Error attempting to delete the ProductApi instance.')
+            self.fail('Error deleting the ProductApi instance: {0}'.format(str(e)))
 
         return True
 
     def get_resource(self):
-        # self.log('Checking if the Api instance {0} is present'.format(self.))
+        # self.log('Checking if the ProductApi instance {0} is present'.format(self.))
         found = False
         try:
             response = self.mgmt_client.query(self.url,
@@ -695,9 +635,9 @@ class AzureRMApi(AzureRMModuleBaseExt):
                                               30)
             found = True
             self.log("Response : {0}".format(response))
-            # self.log("Api instance : {0} found".format(response.name))
+            # self.log("ProductApi instance : {0} found".format(response.name))
         except CloudError as e:
-            self.log('Did not find the Api instance.')
+            self.log('Did not find the ProductApi instance.')
         if found is True:
             return response
 
@@ -705,7 +645,7 @@ class AzureRMApi(AzureRMModuleBaseExt):
 
 
 def main():
-    AzureRMApi()
+    AzureRMProductApi()
 
 
 if __name__ == '__main__':

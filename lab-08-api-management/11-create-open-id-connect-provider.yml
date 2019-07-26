@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateOpenIdConnectProvider
+      azure.rm.apimanagementopenidconnectprovider:                                                                              resource_group: myResourceGroup
+        service_name: "{{ service_name }}"
+        opid: myOpenidConnectProvider
+        display_name: templateoidprovider3
+        metadata_endpoint: 'https://oidprovider-template3.net'
+        client_id: oidprovidertemplate3
