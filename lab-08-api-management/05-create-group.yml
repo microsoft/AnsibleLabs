@@ -6,7 +6,8 @@
     - ./modules 
   tasks:
     - name: ApiManagementCreateGroup
-      azure.rm.apimanagementgroup:                                                                                                                              resource_group: myResourceGroup
+      azure.rm.apimanagementgroup:                                                                                                                              
+        resource_group: "{{ resource_group }}"
         service_name: "{{ service_name }}"
         group_id: myGroup
         display_name: temp group

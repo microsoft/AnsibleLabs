@@ -5,7 +5,8 @@
   roles:
     - ./modules 
   tasks:
-    - name: ApiManagementCreateNotification                                                                                   azure.rm.apimanagementnotification:
+    - name: ApiManagementCreateNotification 
+      azure.rm.apimanagementnotification:
         resource_group: "{{ resource_group }}"
         service_name: "{{ service_name }}"
         name: RequestPublisherNotificationMessage

@@ -6,7 +6,8 @@
     - ./modules 
   tasks:
     - name: ApiManagementCreateOpenIdConnectProvider
-      azure.rm.apimanagementopenidconnectprovider:                                                                              resource_group: myResourceGroup
+      azure.rm.apimanagementopenidconnectprovider:                                                                             
+        resource_group: "{{ resource_group }}"
         service_name: "{{ service_name }}"
         opid: myOpenidConnectProvider
         display_name: templateoidprovider3

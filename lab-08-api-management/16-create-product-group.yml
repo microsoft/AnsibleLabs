@@ -5,7 +5,9 @@
   roles:
     - ./modules 
   tasks:
-    - name: ApiManagementCreateProductGroup                                                                                   azure.rm.apimanagementproductgroup:                                                                                       resource_group: myResourceGroup
+    - name: ApiManagementCreateProductGroup                                                                                   
+      azure.rm.apimanagementproductgroup:                                                                                       
+        resource_group: "{{ resource_group }}"
         service_name: "{{ service_name }}"
         product_id: myProduct
         group_id: myGroup

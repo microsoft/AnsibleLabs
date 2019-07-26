@@ -6,10 +6,11 @@
     - ./modules 
   tasks:
     - name: ApiManagementCreateApiSchema
-      azure.rm.apimanagementapischema:                                                                                                                           resource_group: myResourceGroup
-         service_name: "{{ service_name }}"
-         api_id: "{{ api_name }}"
-         schema_id: mySchema
-         content_type: application/vnd.ms-azure-apim.xsd+xml
-         document:
-           value: "<s:schema elementFormDefault=qualified>"
+      azure.rm.apimanagementapischema:   
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        schema_id: mySchema
+        content_type: application/vnd.ms-azure-apim.xsd+xml
+        document:
+          value: "<s:schema elementFormDefault=qualified>"

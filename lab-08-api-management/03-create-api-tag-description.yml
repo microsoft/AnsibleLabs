@@ -6,8 +6,9 @@
     - ./modules 
   tasks:
     - name: ApiManagementCreateApiTagDescription
-      azure.rm.apimanagementapitagdescription:                                                                                                                  resource_group: myResourceGroup
-        service_name: "{{ service_name }}"
+      azure.rm.apimanagementapitagdescription:                                                                                                                 
+        resource_group: myResourceGroup
+        service_name: "{{ resource_group }}"
         api_id: "{{ api_name }}"
         tag_id: tag1
         description: >-

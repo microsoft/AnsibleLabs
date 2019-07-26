@@ -6,7 +6,8 @@
     - ./modules 
   tasks:
     - name: ApiManagementCreateUser
-      azure.rm.apimanagementuser:                                                                                                                               resource_group: myResourceGroup
+      azure.rm.apimanagementuser:                                                                                                                               
+        resource_group: "{{ resource_group }}"
         service_name: "{{ service_name }}"
         user_id: "{{ user_name }}"
         email: foobar@outlook.com
