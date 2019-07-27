@@ -17,7 +17,7 @@ It's experimental in several ways:
 ## Step 0 - Create Service
 
 ```
-az apimgmt create --resource-group "rg1" --name "apimService1" --publisher-email \
+az apim create --resource-group "rg1" --name "apimService1" --publisher-email \
 "apim@autorestsdk.com" --publisher-name "autorestsdk" --sku-name "Developer" \
 --sku-capacity "1" --location "Central US"
 ```
@@ -25,7 +25,7 @@ az apimgmt create --resource-group "rg1" --name "apimService1" --publisher-email
 ## Step 1 - Create Api
 
 ```
-az apimgmt api create --resource-group "rg1" --service-name "apimService1" --api-id \
+az apim api create --resource-group "rg1" --service-name "apimService1" --api-id \
 "petstore" --path "petstore" --value "http://petstore.swagger.io/v2/swagger.json" \
 --format "swagger-link-json" --protocols "[\"http\",\"https\"]" --display-name "Pet Store API"
 ```
@@ -74,7 +74,7 @@ You will see following response:
 To create new API property execute following command:
 
 ```
-az apimgmt property create --resource-group "rg1" --service-name "apimService1" --prop-id \
+az apim property create --resource-group "rg1" --service-name "apimService1" --prop-id \
 "testprop2" --secret true --display-name "prop3name" --value "propValue"
 ```
 
@@ -98,7 +98,7 @@ The response looks as follows:
 ### Create API Operation
 
 ```
-az apimgmt api operation create --resource-group "rg1" --service-name "apimService1" \
+az apim api operation create --resource-group "rg1" --service-name "apimService1" \
 --api-id "petstore" --operation-id "newoperations" --description \
 "This can only be done by the logged in user." --display-name "createUser2" --method \
 "POST" --url-template "/user1"
@@ -131,7 +131,7 @@ az apimgmt api operation create --resource-group "rg1" --service-name "apimServi
 ### Create API Operation Policy
 
 ```
-az apimgmt api operation policy create --resource-group "rg1" --service-name \
+az apim api operation policy create --resource-group "rg1" --service-name \
 "apimService1" --api-id "petstore" --operation-id \
 "newoperations" --policy-id "policy" --value "<policies> <inbound /> <backend>
     <forward-request />  </backend>  <outbound /></policies>" --format "xml"
@@ -153,7 +153,7 @@ az apimgmt api operation policy create --resource-group "rg1" --service-name \
 ### Create API Policy
 
 ```
-az apimgmt policy create --resource-group "rg1" --service-name "apimService1" --policy-id \
+az apim policy create --resource-group "rg1" --service-name "apimService1" --policy-id \
 "policy" --value "<policies>\r\n  <inbound />\r\n  <backend>\r\n    <forward-request />\r\
 n  </backend>\r\n  <outbound />\r\n</policies>" --format "xml"
 ```
@@ -171,7 +171,7 @@ n  </backend>\r\n  <outbound />\r\n</policies>" --format "xml"
 
 ### Create API Diagnostic
 
-az apimgmt api diagnostic create --resource-group "rg1" --service-name "apimService1" \
+az apim api diagnostic create --resource-group "rg1" --service-name "apimService1" \
 --api-id "petstore" --diagnostic-id "applicationinsights" --always-log \
 "allErrors" --logger-id "/loggers/myloggerins"
 
@@ -194,7 +194,7 @@ az apimgmt api diagnostic create --resource-group "rg1" --service-name "apimServ
 
 ## Create Diagnostic
 
-        az apimgmt diagnostic create --resource-group "rg1" --service-name "apimService1" \
+        az apim diagnostic create --resource-group "rg1" --service-name "apimService1" \
         --diagnostic-id "applicationinsights" --always-log "allErrors" --logger-id \
         "/loggers/myloggerins" --debug
 
@@ -217,7 +217,7 @@ First you have to create eventhub namespace:
 
 ```
 az eventhubs namespace create --resource-group rg1 --name myeventhubzysysy --location \
-westus --tags tag1=value1 tag2=value2 --sku Standard --enable-auto-inflate False --maximum-throughput-units 20 --enable-auto-inflate
+westus --tags tag1=value1 tag2=value2 --sku Standard --enable-auto-inflate False --maximum-throughput-units 21
 ```
 
 > original example was not broken correctly
@@ -323,7 +323,7 @@ az eventhubs eventhub authorization-rule create --resource-group rg1 \
 
 ### Create Logger
 
-az apimgmt logger create --resource-group "rg1" --service-name "apimService1" --logger-id \
+az apim logger create --resource-group "rg1" --service-name "apimService1" --logger-id \
 "mylogger" --logger-type "azureEventHub" --description "adding a new logger" --credentials "{\"name\":\"myeventhub\",\"connectionString\": \"Endpoint=sb://myeventhubzysysy.servicebus.windows.net/;SharedAccessKeyName=myauthorule;SharedAccessKey=zY/rGgpruNGaQzQidd+nTbTw8zKObaZTNBFqMx6dqzg=;EntityPath=myeventhub\"}"
 
 {
@@ -345,7 +345,7 @@ az apimgmt logger create --resource-group "rg1" --service-name "apimService1" --
 
 > Create logger from insights
 
-az apimgmt logger create --resource-group "rg1" --service-name "apimService1" --logger-id \
+az apim logger create --resource-group "rg1" --service-name "apimService1" --logger-id \
 "myloggerins" --logger-type "applicationInsights" --description "adding a new logger" --credentials "{\"instrumentationKey\":\"0c5fa0bc-386c-406b-92bd-ffbd862f8a1d\"}"
 
 {
@@ -365,7 +365,7 @@ az apimgmt logger create --resource-group "rg1" --service-name "apimService1" --
 ## Step XX - Create Backend
 
 ```
-az apimgmt backend create --resource-group "rg1" --service-name "apimService1" \
+az apim backend create --resource-group "rg1" --service-name "apimService1" \
 --backend-id "sfbackend" --description "Service Fabric Test App 1" --url \
 "fabric:/mytestapp/mytestservice" --protocol "http"
 ```
@@ -391,7 +391,7 @@ az apimgmt backend create --resource-group "rg1" --service-name "apimService1" \
 ## Step XX - Adding Certificate
 
 ```
-az apimgmt certificate create --resource-group "rg1" --service-name "apimService1" \
+az apim certificate create --resource-group "rg1" --service-name "apimService1" \
 --certificate-id "tempcert" --data \
 "MIIDsTCCApmgAwIB6s+k2it5iRCiWZXKgA4AsCQGRTUDQ==" --password \
 "somepassword"
@@ -402,7 +402,7 @@ az apimgmt certificate create --resource-group "rg1" --service-name "apimService
 ## Step XX - Create Versionset
 
 ```
-az apimgmt apiversionset create --resource-group "rg1" --service-name "apimService1" \
+az apim api-version-set create --resource-group "rg1" --service-name "apimService1" \
 --version-set-id "api1" --description "Version configuration" --display-name "api set 1" \
 --versioning-scheme "Segment"
 ```
@@ -424,7 +424,7 @@ az apimgmt apiversionset create --resource-group "rg1" --service-name "apimServi
 ## Step XX - Manage Users and Groups
 
 ```
-az apimgmt user create --resource-group "rg1" --service-name "apimService1" --user-id \
+az apim user create --resource-group "rg1" --service-name "apimService1" --user-id \
 "foobar" --email "foobar@outlook.com" --first-name "foo" --last-name \
 "bar" --confirmation "signup"
 ```
@@ -467,7 +467,7 @@ az apimgmt user create --resource-group "rg1" --service-name "apimService1" --us
 ### Create group
 
 ```
-az apimgmt group create --resource-group "rg1" --service-name "apimService1" --group-id \
+az apim group create --resource-group "rg1" --service-name "apimService1" --group-id \
 "aadGroup" --display-name "NewGroup (samiraad.onmicrosoft.com)" --description \
 "new group to test" --type "external" --external-id \
 "aad://samiraad.onmicrosoft.com/groups/83cf2753-5831-4675-bc0e-2f8dc067c58d"
@@ -490,7 +490,7 @@ az apimgmt group create --resource-group "rg1" --service-name "apimService1" --g
 ### Assign User To Group
 
 ```
-az apimgmt group user create --resource-group "rg1" --service-name "apimService1" \
+az apim group user create --resource-group "rg1" --service-name "apimService1" \
 --group-id "aadGroup" --user-id "foobar"
 ```
 
@@ -518,7 +518,7 @@ az apimgmt group user create --resource-group "rg1" --service-name "apimService1
 ### Create a tag
 
 ```
-az apimgmt tag create --resource-group "rg1" --service-name "apimService1" --tag-id \
+az apim tag create --resource-group "rg1" --service-name "apimService1" --tag-id \
 "tagId1" --display-name "tag1"
 ```
 
@@ -537,7 +537,7 @@ Response:
 ### Create API Tag Description
 
 ```
-az apimgmt api tagdescription create --resource-group "rg1" --service-name "apimService1" \
+az apim api tag-description create --resource-group "rg1" --service-name "apimService1" \
 --api-id "petstore" --tag-id "tagId1" --description "Some description that
     will be displayed for operation's tag if the tag is assigned to operation of the API" \
 --external-docs-url "http://some.url/additionaldoc" --external-docs-description \
@@ -564,7 +564,7 @@ az apimgmt api tagdescription create --resource-group "rg1" --service-name "apim
 ### Create Notification
 
 ```
-az apimgmt notification create --resource-group "rg1" --service-name "apimService1" \
+az apim notification create --resource-group "rg1" --service-name "apimService1" \
 --name "RequestPublisherNotificationMessage" --title "My Notification"
 ```
 
@@ -588,7 +588,7 @@ az apimgmt notification create --resource-group "rg1" --service-name "apimServic
 ### Add E-mail to Notification
 
 ```
-az apimgmt notification recipientemail create --resource-group "rg1" --service-name \
+az apim notification recipient-email create --resource-group "rg1" --service-name \
 "apimService1" --notification-name "RequestPublisherNotificationMessage" --email \
 "foobar@live.com"
 ```
@@ -606,7 +606,7 @@ az apimgmt notification recipientemail create --resource-group "rg1" --service-n
 ### Add User to Notification
 
 ```
-az apimgmt notification recipientuser create --resource-group "rg1" --service-name \
+az apim notification recipient-user create --resource-group "rg1" --service-name \
 "apimService1" --notification-name "RequestPublisherNotificationMessage" --user-id \
 "foobar"
 ```
@@ -628,7 +628,7 @@ az apimgmt notification recipientuser create --resource-group "rg1" --service-na
 ### Create Product
 
 ```
-az apimgmt product create --resource-group "rg1" --service-name "apimService1" \
+az apim product create --resource-group "rg1" --service-name "apimService1" \
 --product-id "testproduct" --display-name "Test Template ProductName 4"
 ```
 
@@ -636,5 +636,5 @@ az apimgmt product create --resource-group "rg1" --service-name "apimService1" \
 ## Clean Up
 
 ```
-az apimgmt delete --resource-group "rg1" --name "apimService1"
+az apim delete --resource-group "rg1" --name "apimService1"
 ```
