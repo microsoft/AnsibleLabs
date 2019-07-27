@@ -1,0 +1,13 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateProduct
+      azure.rm.apimanagementproduct:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        product_id: myProduct
+        display_name: Test Template ProductName

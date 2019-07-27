@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateProperty
+      azure.rm.apimanagementproperty:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        prop_id: myProperty                                                                                                     
+        secret: true
+        display_name: prop3name
+        value: propValue

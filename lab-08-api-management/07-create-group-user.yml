@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateGroupUser                                                                                      
+      azure.rm.apimanagementgroupuser:                                                                                          
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        group_id: myGroup
+        user_id: "{{ user_name }}"
+        first_name: test
+        last_name: user
