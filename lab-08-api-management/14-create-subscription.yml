@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateSubscription
+      azure.rm.apimanagementsubscription:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        sid: testsub
+        owner_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/myServiceLqy/users/myUser
+        scope: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/myServiceLqt/products/myProduct
+        display_name: testsub

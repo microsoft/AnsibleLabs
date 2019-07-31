@@ -50,14 +50,11 @@ For **Azure CLI** equivalent of this lab instructions, open **README-AZURE-CLI.m
       - https
       - http
 ```
-
-## Playbook 2 - Create Api Schema
-    ansible-playbook 02-create-api-schema.yml
     Api Management Api Schema Creation Task:
 ```
 - name: ApiManagementCreateApiSchema
   azure.rm.apimanagementapischema:                  
-    resource_group: myResourceGroup
+    resource_group: "{{ resource_group }}"
     service_name: "{{ service_name }}"
     api_id: "{{ api_name }}"
     schema_id: mySchema
@@ -65,15 +62,12 @@ For **Azure CLI** equivalent of this lab instructions, open **README-AZURE-CLI.m
     document:
       value: "<s:schema elementFormDefault=qualified>"
 ```
-
-## Playbook 3 - Create Api Tag Description
-    ansible-playbook 03-create-api-tag-description.yml
     Api Management Api Tag Description Creation Task:
 ```
 - name: ApiManagementCreateApiTagDescription
   azure.rm.apimanagementapitagdescription:                                                                                                                 
-    resource_group: myResourceGroup
-    service_name: "{{ resource_group }}"
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
     api_id: "{{ api_name }}"
     tag_id: tag1
     description: >-
@@ -82,23 +76,117 @@ For **Azure CLI** equivalent of this lab instructions, open **README-AZURE-CLI.m
     external_docs_url: 'http://some.url/additionaldoc'
     external_docs_description: Description of the external docs resource
 ```
-
-# Playbook 4 - Create Cache
-    ansible-playbook 04-create-cache.yml
-    Api Management Cache Creation Task:
+    Api Management Api Release Creation Task:
 ```
-- name: ApiManagementCreateCache
-  azure.rm.apimanagementcache:
+- name: ApiManagementCreateApiRelease                                                                                     
+  azure.rm.apimanagementapirelease:
     resource_group: "{{ resource_group }}"
     service_name: "{{ service_name }}"
-    cache_id: westindia
-    description: Update Cache in west India
-    connection_string: 'contoso5.redis.cache.windows.net,ssl=true,password=...'
-    resource_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.Cache/Redis/contoso5
+    api_id: "{{ api_name }}"
+    papi_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/myServiceLqy/apis/myApi
+    release_id: myRelease
+    notes: yahooagain
+```
+    Api Management Api Version Set Creation Task:
+```
+- name: ApiManagementCreateApiVersionSet
+  azure.rm.apimanagementapiversionset:                                                                                      
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    version_set_id: myApiVersionSet
+    description: Version configuration
+    display_name: "api set 1"
+    versioning_scheme: Segment
 ```
 
-# Playbook 5 - Create Group
-    ansible-playbook 05-create-group.yml
+# Playbook 2 - Create Diagnostic
+    ansible-playbook 02-create-diagnostic.yml
+    Api Management Logger Creation Task:
+```
+- name: ApiManagementCreateAILogger
+  azure.rm.apimanagementlogger:
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    logger_id: myLogger
+    logger_type: applicationInsights
+    description: adding a new logger
+    credentials:
+      instrumentationKey: 714c6d94-e036-4d07-8b0b-979f4b63bc65
+```
+    Api Management Diagnostic Creation Task:
+```
+ - name: ApiManagementCreateDiagnostic
+  azure.rm.apimanagementdiagnostic:                                                                                         
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    diagnostic_id: applicationinsights
+    always_log: allErrors
+    logger_id: /loggers/myLoggerId
+    sampling:
+      sampling_type: fixed
+      percentage: '50'
+    frontend:
+      request:
+        headers:
+          - Content-type
+        body:
+          bytes: '512'
+      response:
+        headers:
+          - Content-type
+        body:
+          bytes: '512'
+    backend:
+      request:
+        headers:
+          - Content-type
+        body:
+          bytes: '512'
+      response:
+        headers:
+          - Content-type
+        body:
+          bytes: '512'
+```
+    Api Management Api Diagnostic Creation Task:
+```
+- name: ApiManagementCreateApiDiagnostic
+  azure.rm.apimanagementapidiagnostic:
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    api_id: "{{ api_name }}"
+    diagnostic_id: applicationinsights
+    always_log: allErrors
+    logger_id: /loggers/myLoggerId
+    sampling:
+      sampling_type: fixed
+      percentage: '50'
+    frontend:
+      request:
+        headers:
+          - Content-type
+        body:
+          bytes: '512'
+      response:
+        headers:
+          - Content-type
+        body:
+          bytes: '512'
+    backend:
+      request:
+        headers:
+          - Content-type
+        body:
+          bytes: '512'
+      response:
+        headers:
+          - Content-type
+        body:
+          bytes: '512'
+```
+
+# Playbook 3 - Create Group User
+    ansible-playbook 03-create-group-user.yml
     Api Management Group Creation Task:
 ```
 - name: ApiManagementCreateGroup
@@ -108,9 +196,6 @@ For **Azure CLI** equivalent of this lab instructions, open **README-AZURE-CLI.m
     group_id: myGroup
     display_name: temp group
 ```
-
-# Playbook 6 - Create User
-    ansible-playbook 06-create-user.yml
     Api Management User Creation Task:
 ```
 - name: ApiManagementCreateUser
@@ -123,9 +208,6 @@ For **Azure CLI** equivalent of this lab instructions, open **README-AZURE-CLI.m
     last_name: bar
     confirmation: signup
 ```
-
-# Playbook 7 - Create Group User
-    ansible-playbook 07-create-group-user.yml
     Api Management Group User Creation Task:
 ```
 - name: ApiManagementCreateGroupUser                                                                                      
@@ -138,8 +220,177 @@ For **Azure CLI** equivalent of this lab instructions, open **README-AZURE-CLI.m
     last_name: user
 ```
 
-# Playbook 8 - Create Notification
-    ansible-playbook 08-create-notification.yml
+# Playbook 4 - Create Policy
+    ansible-playbook 04-create-policy.yml
+    Api Management Policy Creation Task:
+```
+- name: ApiManagementCreatePolicy
+  azure.rm.apimanagementpolicy:                                                                                             
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    policy_id: policy
+    value: "<policies>\r\n  <inbound />\r\n  <backend>\r\n    <forward-request />\r\n  </backend>\r\n  <outbound />\r\n</policies>"
+    format: xml
+```
+    Api Management Api Policy Creation Task:
+```
+- name: ApiManagementCreateApiPolicy
+  azure.rm.apimanagementapipolicy:
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    api_id: "{{ api_name }}"
+    policy_id: policy
+    value: "<policies>\r\n  <inbound />\r\n  <backend>\r\n    <forward-request />\r\n  </backend>\r\n  <outbound />\r\n</policies>"
+s    format: xml
+```
+
+# Playbook 5 - Create Product
+    ansible-playbook 05-create-product.yml
+    Api Management Product Creation Task:
+```
+- name: ApiManagementCreateProduct
+  azure.rm.apimanagementproduct:
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    product_id: myProduct
+    display_name: Test Template ProductName
+```
+    Api Management Product Api Creation Task:
+```
+- name: ApiManagementCreateProductApi
+  azure.rm.apimanagementproductapi:
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    product_id: myProduct
+    api_id: "{{ api_name }}"
+    path: newapiPath
+```
+    Api Management Product Policy Creation Task:
+```
+- name: ApiManagementCreateProductPolicy
+  azure.rm.apimanagementproductpolicy:                                                                                      
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    product_id: myProduct
+    policy_id: policy
+    value: "<policies>\r\n  <inbound />\r\n  <backend>\r\n    <forward-request />\r\n  </backend>\r\n  <outbound />\r\n</policies>"
+    format: xml
+```
+    Api Management Product Group Creation Task:
+```
+- name: ApiManagementCreateProductGroup                                                                                   
+  azure.rm.apimanagementproductgroup:                                                                                       
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    product_id: myProduct
+    group_id: myGroup
+    display_name: EchoApi
+```
+
+# Playbook 6 - Create Api Operation
+    ansible-playbook 06-create-api-operation.yml
+    Api Management Api Operation Creation Task:
+```
+- name: ApiManagementCreateApiOperation
+  azure.rm.apimanagementapioperation:
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    api_id: "{{ api_name }}"
+    operation_id: myOperation
+    template_parameters: []
+    description: This can only be done by the logged in user.
+    request:
+      description: Created user object
+      query_parameters: []
+      headers: []
+      representations:
+        - content_type: application/json
+          schema_id: mySchema
+          type_name: User
+    responses:
+      - status_code: '200'
+        description: successful operation
+        representations:
+          - content_type: application/xml
+          - content_type: application/json
+        headers: []
+    display_name: createUser2
+    method: POST
+    url_template: /user1
+```
+    Api Management Api Operation Policy Creation Task:
+```
+- name: ApiManagementCreateApiOperationPolicy
+  azure.rm.apimanagementapioperationpolicy:                                                                                
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    api_id: "{{ api_name }}"
+    operation_id: myOperation
+    policy_id: policy
+    value: "<policies>\r\n  <inbound />\r\n  <backend>\r\n    <forward-request />\r\n  </backend>\r\n  <outbound />\r\n</policies>"
+    format: xml
+```
+
+# Playbook 7 - Create Api Issue
+    ansible-playbook 07-create-api-issue.yml
+    Api Management Api Issue Creation Task:
+```
+- name: ApiManagementCreateApiIssue
+  azure.rm.apimanagementapiissue:
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    api_id: "{{ api_name }}"
+    issue_id: "{{ issue_name }}"
+    created_date: '2018-02-01T22:21:20.467Z'
+    pstate: open
+    title: New API issue
+    description: New API issue description
+    papi_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/myServiceLqy/apis/myApi
+    user_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/myServiceLqy/users/myUser
+```
+    Api Management Api Issue Attachment Creation Task:
+```
+- name: ApiManagementCreateApiIssueAttachment
+  azure.rm.apimanagementapiissueattachment:
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    api_id: "{{ api_name }}"
+    issue_id: "{{ issue_name }}"
+    attachment_id: myAttachment
+    title: Issue attachment.
+    content_format: image/jpeg
+    content: IEJhc2U2NA==
+```
+    Api Management Api Issue Comment Creation Task:
+```
+- name: ApiManagementCreateApiIssueComment
+  azure.rm.apimanagementapiissuecomment:
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    api_id: "{{ api_name }}"
+    issue_id: "{{ issue_name }}"
+    comment_id: myComment
+    text: Issue comment.
+    created_date: '2018-02-01T22:21:20.467Z'
+    user_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/myServiceLqy/users/myUser
+```
+
+# Playbook 8 - Create Cache
+    ansible-playbook 08-create-cache.yml
+    Api Management Cache Creation Task:
+```
+- name: ApiManagementCreateCache
+  azure.rm.apimanagementcache:
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    cache_id: westindia
+    description: Update Cache in west India
+    connection_string: 'contoso5.redis.cache.windows.net,ssl=true,password=...'
+    resource_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.Cache/Redis/contoso5
+```
+
+# Playbook 9 - Create Notification
+    ansible-playbook 09-create-notification.yml
     Api Management Notification Creation Task:
 ```
 - name: ApiManagementCreateNotification 
@@ -149,9 +400,6 @@ For **Azure CLI** equivalent of this lab instructions, open **README-AZURE-CLI.m
     name: RequestPublisherNotificationMessage
     title: Subscription requests (requiring approval
 ```
-
-# Playbook 9 - Create Notification Recipient Email
-    ansible-playbook 09-create-notification-recipient-email.yml
     Api Management Notification Recipient Email Creation Task:
 ```
 - name: ApiManagementCreateNotificationRecipientEmail
@@ -161,9 +409,6 @@ For **Azure CLI** equivalent of this lab instructions, open **README-AZURE-CLI.m
     notification_name: RequestPublisherNotificationMessage
     email: myRecipientEmail
 ```
-
-# Playbook 10 - Create Notification Recipient User
-    ansible-playbook 10-create-notification-recipient-user.yml
     Api Management Notification Recipient User Creation Task:
 ```
 - name: ApiManagementCreateNotificationRecipientUser
@@ -172,6 +417,35 @@ For **Azure CLI** equivalent of this lab instructions, open **README-AZURE-CLI.m
     service_name: "{{ service_name }}"
     notification_name: RequestPublisherNotificationMessage
     user_id: "{{ user_name }}"
+```
+
+# Playbook 10 - Create Authorization Server
+    ansible-playbook 10-create-authorization-server.yml
+    Api Management Authorization Server Creation Task:
+```
+- name: ApiManagementCreateAuthorizationServer
+  azure.rm.apimanagementauthorizationserver:                                                                                \
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    authsid: myAuthorizationServer
+    description: test server
+    authorization_methods:
+      - GET
+    token_endpoint: 'https://www.contoso.com/oauth2/token'
+    support_state: true
+    default_scope: read write
+    bearer_token_sending_methods:
+      - authorizationHeader
+    client_secret: '2'
+    resource_owner_username: un
+    resource_owner_password: pwd
+    display_name: test2
+    client_registration_endpoint: 'https://www.contoso.com/apps'
+    authorization_endpoint: 'https://www.contoso.com/oauth2/auth'
+    grant_types:
+      - authorizationCode
+      - implicit
+    client_id: '1'
 ```
 
 # Playbook 11 - Create Open Id Connect Provider
@@ -188,72 +462,68 @@ For **Azure CLI** equivalent of this lab instructions, open **README-AZURE-CLI.m
     client_id: oidprovidertemplate3
 ```
 
-# Playbook 12 - Create Product
-    ansible-playbook 12-create-product.yml
-    Api Management Product Creation Task:
+# Playbook 12 - Create Backend
+    ansible-playbook 11-create-backend.yml
+    Api Management Backend Creation Task:
 ```
-- name: ApiManagementCreateProduct
-  azure.rm.apimanagementproduct:
+- name: ApiManagementCreateBackendServiceFabric
+  azure.rmapimanagementbackend:
     resource_group: "{{ resource_group }}"
     service_name: "{{ service_name }}"
-    product_id: myProduct
-    display_name: Test Template ProductName
+    backend_id: myBackend
+    description: description5308
+    credentials:
+      query:
+        sv:
+          - xx
+          - bb
+          - cc
+      header:
+        x-my-1:
+          - val1
+          - val2
+      authorization:
+        scheme: Basic
+        parameter: opensesma
+    proxy:
+      url: 'http://192.168.1.1:8080'
+      username: Contoso\admin
+      password: opensesame
+    tls:
+      validate_certificate_chain: true
+      validate_certificate_name: true
+    url: 'https://backendname2644/'
+    protocol: http
 ```
 
-# Playbook 13 - Create Product Api
-    ansible-playbook 13-create-product-api.yml
-    Api Management Product Api Creation Task:
+# Playbook 13 - Create Identity Provider
+    ansible-playbook 17-create-identity-provider.yml
+    Api Management Identity Provider Creation Task:
 ```
-- name: ApiManagementCreateProductApi
-  azure.rm.apimanagementproductapi:
+- name: ApiManagementCreateIdentityProvider
+  azure.rm.apimanagementidentityprovider:                                                                                   
     resource_group: "{{ resource_group }}"
     service_name: "{{ service_name }}"
-    product_id: myProduct
-    api_id: "{{ api_name }}"
-    path: newapiPath
+    name: microsoft
+    client_id: facebookid
+    client_secret: facebookapplicationsecret
 ```
 
-# Playbook 14 - Create Policy
-    ansible-playbook 14-create-policy.yml
-    Api Management Policy Creation Task:
+# Playbook 14 - Create Subscription
+    ansible-playbook 15-create-subscription.yml
+    Api Management Subscription Creation Task:
 ```
-- name: ApiManagementCreatePolicy
-  azure.rm.apimanagementpolicy:                                                                                             
+- name: ApiManagementCreateSubscription
+  azure.rm.apimanagementsubscription:
     resource_group: "{{ resource_group }}"
     service_name: "{{ service_name }}"
-    policy_id: policy
-    value: "<policies>\r\n  <inbound />\r\n  <backend>\r\n    <forward-request />\r\n  </backend>\r\n  <outbound />\r\n</policies>"
-    format: xml
+    sid: testsub
+    owner_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/myServiceLqy/users/myUser
+    scope: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/myServiceLqt/products/myProduct
+    display_name: testsub
 ```
 
-# Playbook 15 - Create Product Policy
-    ansible-playbook 15-create-product-policy.yml
-    Api Management Product Policy Creation Task:
-```
-- name: ApiManagementCreateProductPolicy
-  azure.rm.apimanagementproductpolicy:                                                                                      
-    resource_group: "{{ resource_group }}"
-    service_name: "{{ service_name }}"
-    product_id: myProduct
-    policy_id: policy
-    value: "<policies>\r\n  <inbound />\r\n  <backend>\r\n    <forward-request />\r\n  </backend>\r\n  <outbound />\r\n</policies>"
-    format: xml
-```
-
-# Playbook 16 - Create Product Group
-    ansible-playbook 16-create-product-group.yml
-    Api Management Product Group Creation Task:
-```
-- name: ApiManagementCreateProductGroup                                                                                   
-  azure.rm.apimanagementproductgroup:                                                                                       
-    resource_group: "{{ resource_group }}"
-    service_name: "{{ service_name }}"
-    product_id: myProduct
-    group_id: myGroup
-    display_name: EchoApi
-```
-
-# Playbook 17 - Create Property
+# Playbook 15 - Create Property
     ansible-playbook 17-create-property.yml
     Api Management Property Creation Task:
 ```
@@ -267,7 +537,7 @@ For **Azure CLI** equivalent of this lab instructions, open **README-AZURE-CLI.m
     value: propValue
 ```
 
-# Playbook 18 - Create Tag
+# Playbook 16 - Create Tag
     ansible-playbook 18-create-tag.yml
     Api Management Tag Creation Task:
 ```

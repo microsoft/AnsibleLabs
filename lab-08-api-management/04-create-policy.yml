@@ -12,3 +12,11 @@
         policy_id: policy
         value: "<policies>\r\n  <inbound />\r\n  <backend>\r\n    <forward-request />\r\n  </backend>\r\n  <outbound />\r\n</policies>"
         format: xml
+    - name: ApiManagementCreateApiPolicy
+      azure.rm.apimanagementapipolicy:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        policy_id: policy
+        value: "<policies>\r\n  <inbound />\r\n  <backend>\r\n    <forward-request />\r\n  </backend>\r\n  <outbound />\r\n</policies>"
+        format: xml

@@ -1,0 +1,42 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateApiOperation
+      azure.rm.apimanagementapioperation:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        operation_id: myOperation
+        template_parameters: []
+        description: This can only be done by the logged in user.
+        request:
+          description: Created user object
+          query_parameters: []
+          headers: []
+          representations:
+            - content_type: application/json
+              schema_id: mySchema
+              type_name: User
+        responses:
+          - status_code: '200'
+            description: successful operation
+            representations:
+              - content_type: application/xml
+              - content_type: application/json
+            headers: []
+        display_name: createUser2
+        method: POST
+        url_template: /user1
+    - name: ApiManagementCreateApiOperationPolicy
+      azure.rm.apimanagementapioperationpolicy:                                                                                
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        operation_id: myOperation
+        policy_id: policy
+        value: "<policies>\r\n  <inbound />\r\n  <backend>\r\n    <forward-request />\r\n  </backend>\r\n  <outbound />\r\n</policies>"
+        format: xml

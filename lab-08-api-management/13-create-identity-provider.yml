@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateIdentityProvider
+      azure.rm.apimanagementidentityprovider:                                                                                   
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        name: microsoft
+        client_id: facebookid
+        client_secret: facebookapplicationsecret

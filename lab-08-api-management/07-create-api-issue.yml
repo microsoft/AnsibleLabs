@@ -1,0 +1,39 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateApiIssue
+      azure.rm.apimanagementapiissue:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        issue_id: "{{ issue_name }}"
+        created_date: '2018-02-01T22:21:20.467Z'
+        pstate: open
+        title: New API issue
+        description: New API issue description
+        papi_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/myServiceLqy/apis/myApi
+        user_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/myServiceLqy/users/myUser
+    - name: ApiManagementCreateApiIssueAttachment
+      azure.rm.apimanagementapiissueattachment:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        issue_id: "{{ issue_name }}"
+        attachment_id: myAttachment
+        title: Issue attachment.
+        content_format: image/jpeg
+        content: IEJhc2U2NA==
+    - name: ApiManagementCreateApiIssueComment
+      azure.rm.apimanagementapiissuecomment:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        issue_id: "{{ issue_name }}"
+        comment_id: myComment
+        text: Issue comment.
+        created_date: '2018-02-01T22:21:20.467Z'
+        user_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/myServiceLqy/users/myUser

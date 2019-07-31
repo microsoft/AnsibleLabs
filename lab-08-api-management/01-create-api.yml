@@ -20,3 +20,39 @@
         protocols:
           - https
           - http
+    - name: ApiManagementCreateApiSchema
+      azure.rm.apimanagementapischema:   
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        schema_id: mySchema
+        content_type: application/vnd.ms-azure-apim.xsd+xml
+        document:
+          value: "<s:schema elementFormDefault=qualified>"
+    - name: ApiManagementCreateApiTagDescription
+      azure.rm.apimanagementapitagdescription:                                                                                                                 
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        tag_id: tag1
+        description: >-
+          Some description that will be displayed for operation's tag if the tag is
+          assigned to operation of the API
+        external_docs_url: 'http://some.url/additionaldoc'
+        external_docs_description: Description of the external docs resource
+    - name: ApiManagementCreateApiRelease                                                                                     
+      azure.rm.apimanagementapirelease:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        papi_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/myServiceLqy/apis/myApi
+        release_id: myRelease
+        notes: yahooagain
+    - name: ApiManagementCreateApiVersionSet
+      azure.rm.apimanagementapiversionset:                                                                                      
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        version_set_id: myApiVersionSet
+        description: Version configuration
+        display_name: "api set 1"
+        versioning_scheme: Segment

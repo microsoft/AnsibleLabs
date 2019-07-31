@@ -1,0 +1,30 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  roles:
+    - ./modules 
+  tasks:
+    - name: ApiManagementCreateAuthorizationServer
+      azure.rm.apimanagementauthorizationserver:                                                                                \
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        authsid: myAuthorizationServer
+        description: test server
+        authorization_methods:
+          - GET
+        token_endpoint: 'https://www.contoso.com/oauth2/token'
+        support_state: true
+        default_scope: read write
+        bearer_token_sending_methods:
+          - authorizationHeader
+        client_secret: '2'
+        resource_owner_username: un
+        resource_owner_password: pwd
+        display_name: test2
+        client_registration_endpoint: 'https://www.contoso.com/apps'
+        authorization_endpoint: 'https://www.contoso.com/oauth2/auth'
+        grant_types:
+          - authorizationCode
+          - implicit
+        client_id: '1'
