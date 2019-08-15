@@ -62,6 +62,15 @@ For **Azure CLI** equivalent of this lab instructions, open **README-AZURE-CLI.m
     document:
       value: "<s:schema elementFormDefault=qualified>"
 ```
+    Api Management Tag Creation Task:
+```
+- name: ApiManagementCreateTag
+  apimanagementtag:
+    resource_group: "{{ resource_group }}"
+    service_name: "{{ service_name }}"
+    tag_id: myTag
+    display_name: tag1
+```
     Api Management Api Tag Description Creation Task:
 ```
 - name: ApiManagementCreateApiTagDescription
@@ -535,16 +544,4 @@ s    format: xml
     secret: true
     display_name: prop3name
     value: propValue
-```
-
-# Playbook 16 - Create Tag
-    ansible-playbook 18-create-tag.yml
-    Api Management Tag Creation Task:
-```
-- name: ApiManagementCreateTag
-  apimanagementtag:
-    resource_group: "{{ resource_group }}"
-    service_name: "{{ service_name }}"
-    tag_id: myTag
-    display_name: tag1
 ```

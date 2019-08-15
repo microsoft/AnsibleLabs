@@ -1,0 +1,158 @@
+---
+- hosts: localhost
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: ApiManagementGetApiContract
+      apimanagementapi_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+    - name: ApiManagementGetApiDiagnostic
+      apimanagementapidiagnostic_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        diagnostic_id: applicationinsights
+    - name: ApiManagementGetApiIssueAttachment
+      apimanagementapiissueattachment_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        issue_id: "{{ issue_name }}" 
+        attachment_id: myAttachment
+    - name: ApiManagementGetApiIssueComment
+      apimanagementapiissuecomment_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        issue_id: "{{ issue_name }}" 
+        comment_id: myComment
+    - name: ApiManagementGetApiOperationPetStore
+      apimanagementapioperation_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        operation_id: myOperation
+    - name: ApiManagementGetApiRelease
+      apimanagementapirelease_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        release_id: myRelease
+    - name: ApiManagementGetApiSchema
+      apimanagementapischema_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        schema_id: mySchema
+    - name: ApiManagementGetApiVersionSet
+      apimanagementapiversionset_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        version_set_id: myApiVersionSet
+    - name: ApiManagementGetApiOperation
+      apimanagementapioperation_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        api_id: "{{ api_name }}"
+        operation_id: myOperation
+    - name: ApiManagementGetAuthorizationServer
+      apimanagementauthorizationserver_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        authsid: myAuthorizationServer
+    - name: ApiManagementGetBackend
+      apimanagementbackend_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        backend_id: myBackend
+    - name: ApiManagementGetCache
+      apimanagementcache_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        cache_id: westindia
+    - name: ApiManagementGetDiagnostic
+      apimanagementdiagnostic_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        diagnostic_id: applicationinsights
+    - name: ApiManagementGetGroup
+      apimanagementgroup_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        group_id: myGroup
+    - name: ApiManagementListGroupUsers
+      apimanagementgroupuser_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        group_id: myGroup
+    - name: ApiManagementGetIdentityProvider
+      apimanagementidentityprovider_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        name: microsoft
+    - name: ApiManagementGetLogger
+      apimanagementlogger_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        logger_id: myLogger
+    - name: ApiManagementGetNotification
+      apimanagementnotification_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        name: RequestPublisherNotificationMessage
+    - name: ApiManagementListNotificationRecipientEmails
+      apimanagementnotificationrecipientemail_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        name: RequestPublisherNotificationMessage
+    - name: ApiManagementListNotificationRecipientUsers
+      apimanagementnotificationrecipientuser_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        name: RequestPublisherNotificationMessage
+    - name: ApiManagementGetOpenIdConnectProvider
+      apimanagementopenidconnectprovider_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        opid: myOpenidConnectProvider
+    - name: ApiManagementGetProduct
+      apimanagementproduct_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        product_id: myProduct
+    - name: ApiManagementListProductApis
+      apimanagementproductapi_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        product_id: myProduct
+    - name: ApiManagementListProductGroups
+      apimanagementproductgroup_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        product_id: myProduct
+    - name: ApiManagementGetProperty
+      apimanagementproperty_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        prop_id: myProperty
+    - name: ApiManagementServiceGetService
+      apimanagementservice_info:
+        resource_group: "{{ resource_group }}"
+        name: "{{ service_name }}"
+    - name: ApiManagementGetSubscription
+      apimanagementsubscription_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        sid: testsub
+    - name: ApiManagementGetTag
+      apimanagementtag_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        tag_id: myTag
+    - name: ApiManagementGetUser
+      apimanagementuser_info:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        user_id: "{{ user_name }}"

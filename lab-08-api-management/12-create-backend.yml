@@ -6,7 +6,7 @@
     - ./modules 
   tasks:
     - name: ApiManagementCreateBackendServiceFabric
-      azure.rmapimanagementbackend:
+      azure.rm.apimanagementbackend:
         resource_group: "{{ resource_group }}"
         service_name: "{{ service_name }}"
         backend_id: myBackend

@@ -29,6 +29,12 @@
         content_type: application/vnd.ms-azure-apim.xsd+xml
         document:
           value: "<s:schema elementFormDefault=qualified>"
+    - name: ApiManagementCreateTag
+      azure.rm.apimanagementtag:
+        resource_group: "{{ resource_group }}"
+        service_name: "{{ service_name }}"
+        tag_id: myTag
+        display_name: tag1
     - name: ApiManagementCreateApiTagDescription
       azure.rm.apimanagementapitagdescription:                                                                                                                 
         resource_group: "{{ resource_group }}"
