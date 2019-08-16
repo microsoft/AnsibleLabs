@@ -263,6 +263,7 @@ s    format: xml
     service_name: "{{ service_name }}"
     product_id: myProduct
     display_name: Test Template ProductName
+    pstate: published
 ```
     Api Management Product Api Creation Task:
 ```
