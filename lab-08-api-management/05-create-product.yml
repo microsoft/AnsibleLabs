@@ -11,6 +11,7 @@
         service_name: "{{ service_name }}"
         product_id: myProduct
         display_name: Test Template ProductName
+        pstate: published
     - name: ApiManagementCreateProductApi
       azure.rm.apimanagementproductapi:
         resource_group: "{{ resource_group }}"

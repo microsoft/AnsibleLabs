@@ -1,0 +1,4 @@
+resource_group: myResourceGroup
+client_id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+secret: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+tenant_id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
