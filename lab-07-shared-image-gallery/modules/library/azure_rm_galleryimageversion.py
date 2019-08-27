@@ -75,8 +75,10 @@ options:
               - Storage account type.
       managed_image:
         description:
-          - undefined
-        required: true
+          - Source managed image to be used.
+      snapshot:
+        description:
+          - Source snapshot to be used.
       replica_count:
         description:
           - >-
@@ -226,6 +228,13 @@ class AzureRMGalleryImageVersions(AzureRMModuleBaseExt):
                         pattern=('/subscriptions/{subscription_id}/resourceGroups'
                                  '/{resource_group}/providers/Microsoft.Compute'
                                  '/images/{name}'),
+                        disposition='source/managedImage/id'
+                    ),
+                    snapshot=dict(
+                        type='raw',
+                        pattern=('/subscriptions/{subscription_id}/resourceGroups'
+                                 '/{resource_group}/providers/Microsoft.Compute'
+                                 '/snapshots/{name}'),
                         disposition='source/managedImage/id'
                     ),
                     replica_count=dict(
