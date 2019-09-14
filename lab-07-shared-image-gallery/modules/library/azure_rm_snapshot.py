@@ -33,17 +33,20 @@ options:
   location:
     description:
       - Resource location
-    required: true
     type: str
   sku:
     description:
-      - undefined
+      - SKU
     type: dict
     suboptions:
       name:
         description:
           - The sku name.
         type: str
+        choices:
+          - Standard_LRS
+          - Premium_LRS
+          - Standard_ZRS
       tier:
         description:
           - The sku tier.
@@ -52,19 +55,23 @@ options:
     description:
       - The Operating System type.
     type: str
+    choices:
+      - Linux
+      - Windows
   creation_data:
     description:
       - >-
         Disk source information. CreationData information cannot be changed
         after the disk has been created.
-    required: true
     type: dict
     suboptions:
       create_option:
         description:
           - This enumerates the possible sources of a disk's creation.
-        required: true
         type: str
+        default: Import
+        choices:
+          - Import
       source_uri:
         description:
           - >-
@@ -78,6 +85,7 @@ options:
         Use C(present) to create or update an Snapshot and C(absent) to delete
         it.
     default: present
+    type: str
     choices:
       - absent
       - present
@@ -144,8 +152,7 @@ class AzureRMSnapshots(AzureRMModuleBaseExt):
             location=dict(
                 type='str',
                 updatable=False,
-                disposition='/',
-                required=True
+                disposition='/'
             ),
             sku=dict(
                 type='dict',
@@ -156,6 +163,9 @@ class AzureRMSnapshots(AzureRMModuleBaseExt):
                         choices=['Standard_LRS',
                                  'Premium_LRS',
                                  'Standard_ZRS']
+                    ),
+                    tier=dict(
+                        type='str'
                     )
                 )
             ),
@@ -168,19 +178,12 @@ class AzureRMSnapshots(AzureRMModuleBaseExt):
             creation_data=dict(
                 type='dict',
                 disposition='/properties/creationData',
-                required=True,
                 options=dict(
                     create_option=dict(
                         type='str',
                         disposition='createOption',
-                        choices=['Empty',
-                                 'Attach',
-                                 'FromImage',
-                                 'Import',
-                                 'Copy',
-                                 'Restore',
-                                 'Upload'],
-                        required=True
+                        choices=['Import'],
+                        default='Import'
                     ),
                     source_uri=dict(
                         type='str',
@@ -302,22 +305,21 @@ class AzureRMSnapshots(AzureRMModuleBaseExt):
             response = old_response
 
         if response:
-           self.results["id"] = response["id"]
+            self.results["id"] = response["id"]
 
         return self.results
 
     def create_update_resource(self):
         # self.log('Creating / Updating the Snapshot instance {0}'.format(self.))
-
         try:
-            response = self.mgmt_client.query(self.url,
-                                              'PUT',
-                                              self.query_parameters,
-                                              self.header_parameters,
-                                              self.body,
-                                              self.status_code,
-                                              600,
-                                              30)
+            response = self.mgmt_client.query(url=self.url,
+                                              method='PUT',
+                                              query_parameters=self.query_parameters,
+                                              header_parameters=self.header_parameters,
+                                              body=self.body,
+                                              expected_status_codes=self.status_code,
+                                              polling_timeout=600,
+                                              polling_interval=30)
         except CloudError as exc:
             self.log('Error attempting to create the Snapshot instance.')
             self.fail('Error creating the Snapshot instance: {0}'.format(str(exc)))
@@ -326,21 +328,20 @@ class AzureRMSnapshots(AzureRMModuleBaseExt):
             response = json.loads(response.text)
         except Exception:
             response = {'text': response.text}
-            pass
 
         return response
 
     def delete_resource(self):
         # self.log('Deleting the Snapshot instance {0}'.format(self.))
         try:
-            response = self.mgmt_client.query(self.url,
-                                              'DELETE',
-                                              self.query_parameters,
-                                              self.header_parameters,
-                                              None,
-                                              self.status_code,
-                                              600,
-                                              30)
+            response = self.mgmt_client.query(url=self.url,
+                                              method='DELETE',
+                                              query_parameters=self.query_parameters,
+                                              header_parameters=self.header_parameters,
+                                              body=None,
+                                              expected_status_codes=self.status_code,
+                                              polling_timeout=600,
+                                              polling_interval=30)
         except CloudError as e:
             self.log('Error attempting to delete the Snapshot instance.')
             self.fail('Error deleting the Snapshot instance: {0}'.format(str(e)))
@@ -351,14 +352,14 @@ class AzureRMSnapshots(AzureRMModuleBaseExt):
         # self.log('Checking if the Snapshot instance {0} is present'.format(self.))
         found = False
         try:
-            response = self.mgmt_client.query(self.url,
-                                              'GET',
-                                              self.query_parameters,
-                                              self.header_parameters,
-                                              None,
-                                              self.status_code,
-                                              600,
-                                              30)
+            response = self.mgmt_client.query(url=self.url,
+                                              method='GET',
+                                              query_parameters=self.query_parameters,
+                                              header_parameters=self.header_parameters,
+                                              body=None,
+                                              expected_status_codes=self.status_code,
+                                              polling_timeout=600,
+                                              polling_interval=30)
             found = True
             self.log("Response : {0}".format(response))
             # self.log("Snapshot instance : {0} found".format(response.name))

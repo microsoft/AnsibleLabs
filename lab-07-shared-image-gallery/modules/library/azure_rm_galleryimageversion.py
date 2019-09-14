@@ -25,18 +25,21 @@ options:
     description:
       - The name of the resource group.
     required: true
+    type: str
   gallery_name:
     description:
       - >-
         The name of the Shared Image Gallery in which the Image Definition
         resides.
     required: true
+    type: str
   gallery_image_name:
     description:
       - >-
         The name of the gallery Image Definition in which the Image Version is
         to be created.
     required: true
+    type: str
   name:
     description:
       - >-
@@ -45,14 +48,16 @@ options:
         period. Digits must be within the range of a 32-bit integer. Format:
         <MajorVersion>.<MinorVersion>.<Patch>
     required: true
+    type: str
   location:
     description:
       - Resource location
-    required: true
+    type: str
   publishing_profile:
     description:
-      - undefined
+      - Publishing profile.
     required: true
+    type: dict
     suboptions:
       target_regions:
         description:
@@ -64,42 +69,52 @@ options:
           name:
             description:
               - Region name.
+            type: str
           regional_replica_count:
             description:
               - >-
                 The number of replicas of the Image Version to be created per
                 region. This property would take effect for a region when
                 regionalReplicaCount is not specified. This property is updatable.
+            type: str
           storage_account_type:
             description:
               - Storage account type.
+            type: str
       managed_image:
         description:
-          - Source managed image to be used.
+          - Managed image reference, could be resource id, or dictionary containing C(resource_group) and C(name)
+        type: raw
       snapshot:
         description:
           - Source snapshot to be used.
+        type: raw
       replica_count:
         description:
           - >-
             The number of replicas of the Image Version to be created per
             region. This property would take effect for a region when
             regionalReplicaCount is not specified. This property is updatable.
+            type: number
       exclude_from_latest:
         description:
           - >-
             If set to true, Virtual Machines deployed from the latest version of
             the Image Definition won't use this Image Version.
+            type: bool
       end_of_life_date:
         description:
           - >-
             The end of life date of the gallery Image Version. This property can
             be used for decommissioning purposes. This property is updatable.
+            Format should be according to ISO-8601, for instance "2019-06-26".
+        type: str
       storage_account_type:
         description:
           - >-
             Specifies the storage account type to be used to store the image.
             This property is not updatable.
+        type: str
   state:
     description:
       - Assert the state of the GalleryImageVersion.
@@ -110,6 +125,7 @@ options:
     choices:
       - absent
       - present
+    type: str
 extends_documentation_fragment:
   - azure
   - azure_tags
@@ -234,8 +250,7 @@ class AzureRMGalleryImageVersions(AzureRMModuleBaseExt):
                         type='raw',
                         pattern=('/subscriptions/{subscription_id}/resourceGroups'
                                  '/{resource_group}/providers/Microsoft.Compute'
-                                 '/snapshots/{name}'),
-                        disposition='source/managedImage/id'
+                                 '/snapshots/{name}')
                     ),
                     replica_count=dict(
                         type='int',
@@ -279,7 +294,7 @@ class AzureRMGalleryImageVersions(AzureRMModuleBaseExt):
 
         self.body = {}
         self.query_parameters = {}
-        self.query_parameters['api-version'] = '2019-03-01'
+        self.query_parameters['api-version'] = '2019-07-01'
         self.header_parameters = {}
         self.header_parameters['Content-Type'] = 'application/json; charset=utf-8'
 
@@ -347,6 +362,15 @@ class AzureRMGalleryImageVersions(AzureRMModuleBaseExt):
                 if not self.default_compare(modifiers, self.body, old_response, '', self.results):
                     self.to_do = Actions.Update
 
+        # fix for differences between version 2019-03-01 and 2019-07-01
+        snapshot = self.body.get('properties', {}).get('publishingProfile', {}).pop('snapshot', None)
+        if snapshot is not None:
+            self.body['properties'].setdefault('storageProfile', {}).setdefault('osDiskImage', {}).setdefault('source', {})['id'] = snapshot
+        managed_image = self.body.get('properties', {}).get('publishingProfile', {}).pop('managed_image', None)
+        if managed_image:
+            self.body['properties'].setdefault('storageProfile', {}).setdefault('source', {})['id'] = managed_image
+
+        # fix snapshot location
         if (self.to_do == Actions.Create) or (self.to_do == Actions.Update):
             self.log('Need to Create / Update the GalleryImageVersion instance')
 
@@ -366,11 +390,6 @@ class AzureRMGalleryImageVersions(AzureRMModuleBaseExt):
                 return self.results
 
             self.delete_resource()
-
-            # make sure instance is actually deleted, for some Azure resources, instance is hanging around
-            # for some time after deletion -- this should be really fixed in Azure
-            while self.get_resource():
-                time.sleep(20)
         else:
             self.log('GalleryImageVersion instance unchanged')
             self.results['changed'] = False
@@ -402,7 +421,6 @@ class AzureRMGalleryImageVersions(AzureRMModuleBaseExt):
             response = json.loads(response.text)
         except Exception:
             response = {'text': response.text}
-            pass
 
         while response['properties']['provisioningState'] == 'Creating':
             time.sleep(60)
@@ -424,7 +442,6 @@ class AzureRMGalleryImageVersions(AzureRMModuleBaseExt):
         except CloudError as e:
             self.log('Error attempting to delete the GalleryImageVersion instance.')
             self.fail('Error deleting the GalleryImageVersion instance: {0}'.format(str(e)))
-
         return True
 
     def get_resource(self):

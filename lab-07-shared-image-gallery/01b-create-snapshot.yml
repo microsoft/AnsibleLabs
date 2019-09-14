@@ -1,0 +1,28 @@
+- hosts: localhost
+  connection: local
+  vars_files:
+    - ./vars.yml
+  roles:
+    - ./modules
+
+  tasks:
+    - name: Get VM information
+      azure_rm_virtualmachine_facts:
+        resource_group: "{{ resource_group }}"
+        name: "{{ source_vm_name }}"
+      register: output
+    - debug:
+        var: output
+
+    - name: Create a snapshot by importing an unmanaged blob from the same subscription.
+      azure_rm_snapshot:
+        resource_group: "{{ resource_group }}"
+        name: mySnapshot
+        location: "{{ location }}"
+        creation_data:
+          create_option: Import
+          source_uri: 'https://{{ output.vms[0].storage_account_name }}.blob.core.windows.net/{{ output.vms[0].storage_container_name }}/{{ output.vms[0].storage_blob_name }}'
+      register: output
+    - debug:
+        var: output
+  
