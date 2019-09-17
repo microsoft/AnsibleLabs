@@ -13,7 +13,7 @@
         name: "{{ shared_image_name }}"
         location: "{{ location }}"
         os_type: linux
-        os_state: generalized
+        os_state: specialized
         identifier:
           publisher: myPublisherName
           offer: myOfferName
