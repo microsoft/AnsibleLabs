@@ -215,7 +215,8 @@ class AzureRMGalleryImageVersions(AzureRMModuleBaseExt):
             location=dict(
                 type='str',
                 updatable=False,
-                disposition='/'
+                disposition='/',
+                comparison='location'
             ),
             publishing_profile=dict(
                 type='dict',
@@ -227,7 +228,8 @@ class AzureRMGalleryImageVersions(AzureRMModuleBaseExt):
                         options=dict(
                             name=dict(
                                 type='str',
-                                required=True
+                                required=True,
+                                comparison='location'
                             ),
                             regional_replica_count=dict(
                                 type='int',
@@ -244,13 +246,14 @@ class AzureRMGalleryImageVersions(AzureRMModuleBaseExt):
                         pattern=('/subscriptions/{subscription_id}/resourceGroups'
                                  '/{resource_group}/providers/Microsoft.Compute'
                                  '/images/{name}'),
-                        disposition='source/managedImage/id'
+                        comparison='ignore'
                     ),
                     snapshot=dict(
                         type='raw',
                         pattern=('/subscriptions/{subscription_id}/resourceGroups'
                                  '/{resource_group}/providers/Microsoft.Compute'
-                                 '/snapshots/{name}')
+                                 '/snapshots/{name}'),
+                        comparison='ignore'
                     ),
                     replica_count=dict(
                         type='int',
@@ -370,7 +373,6 @@ class AzureRMGalleryImageVersions(AzureRMModuleBaseExt):
         if managed_image:
             self.body['properties'].setdefault('storageProfile', {}).setdefault('source', {})['id'] = managed_image
 
-        # fix snapshot location
         if (self.to_do == Actions.Create) or (self.to_do == Actions.Update):
             self.log('Need to Create / Update the GalleryImageVersion instance')
 
@@ -397,7 +399,6 @@ class AzureRMGalleryImageVersions(AzureRMModuleBaseExt):
 
         if response:
             self.results["id"] = response["id"]
-            self.results["old_response"] = response
 
         return self.results
 

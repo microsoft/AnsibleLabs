@@ -17,9 +17,9 @@ DOCUMENTATION = '''
 ---
 module: azure_rm_gallery_info
 version_added: '2.9'
-short_description: Get Gallery info.
+short_description: Get Azure Shared Image Gallery info.
 description:
-  - Get info of Gallery.
+  - Get info of Azure Shared Image Gallery.
 options:
   resource_group:
     description:
@@ -52,8 +52,8 @@ EXAMPLES = '''
 RETURN = '''
 galleries:
   description: >-
-    A list of dict results where the key is the name of the Gallery and the
-    values are the facts for that Gallery.
+    A list of dict results where the key is the name of the gallery and the
+    values are the info for that gallery.
   returned: always
   type: complex
   contains:
@@ -70,12 +70,6 @@ galleries:
       returned: always
       type: str
       sample: "myGallery"
-    type:
-      description:
-        - Resource type
-      returned: always
-      type: str
-      sample: "Microsoft.Compute/galleries"
     location:
       description:
         - Resource location
@@ -88,28 +82,16 @@ galleries:
       returned: always
       type: dict
       sample: { "tag": "value" }
-    properties:
-      returned: always
-      type: dict
-      contains:
-          description:
-            type: str
-            sample: "This is the gallery description."
-          provisioningState:
-            description:
-              - The current state of the gallery.
-            type: str
-            sample: "Succeeded"
-          identifier:
-            description:
-              - This is the gallery Definition identifier.
-            type: dict
-            contain:
-              uniqueName:
-                description:
-                  - The unique name of the Shared Image Gallery. This name is generated automatically by Azure.
-                type: str
-                sample: "myUniqueName"
+    description:
+      description:
+        - This is the gallery description.
+      type: str
+      sample: "This is the gallery description."
+    provisioning_state:
+        description:
+          - The current state of the gallery.
+        type: str
+        sample: "Succeeded"
 
 '''
 
@@ -202,7 +184,7 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
-        return results
+        return self.format_item(results)
 
     def listbyresourcegroup(self):
         response = None
@@ -232,7 +214,7 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
-        return results
+        return [self.format_item(x) for x in results['value']] if results['value'] else []
 
     def list(self):
         response = None
@@ -259,7 +241,18 @@ class AzureRMGalleriesInfo(AzureRMModuleBase):
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
-        return results
+        return [self.format_item(x) for x in results['value']] if results['value'] else []
+
+    def format_item(self, item):
+        d = {
+            'id': item['id'],
+            'name': item['name'],
+            'location': item['location'],
+            'tags': item.get('tags'),
+            'description': item['properties']['description'],
+            'provisioning_state': item['properties']['provisioningState']
+        }
+        return d
 
 
 def main():

@@ -17,20 +17,22 @@ DOCUMENTATION = '''
 ---
 module: azure_rm_galleryimage
 version_added: '2.9'
-short_description: Manage Azure GalleryImage instance.
+short_description: Manage Azure SIG Image instance.
 description:
-  - 'Create, update and delete instance of Azure GalleryImage.'
+  - 'Create, update and delete instance of Azure SIG Image.'
 options:
   resource_group:
     description:
       - The name of the resource group.
     required: true
+    type: str
   gallery_name:
     description:
       - >-
         The name of the Shared Image Gallery in which the Image Definition is to
         be created.
     required: true
+    type: str
   name:
     description:
       - >-
@@ -38,24 +40,29 @@ options:
         allowed characters are alphabets and numbers with dots, dashes, and
         periods allowed in the middle. The maximum length is 80 characters.
     required: true
+    type: str
   location:
     description:
       - Resource location
-    required: true
+    type: str
   description:
     description:
       - >-
         The description of this gallery Image Definition resource. This property
         is updatable.
+    type: str
   eula:
     description:
       - The Eula agreement for the gallery Image Definition.
+    type: str
   privacy_statement_uri:
     description:
       - The privacy statement uri.
+    type: str
   release_note_uri:
     description:
       - The release note uri.
+    type: str
   os_type:
     description:
       - >-
@@ -65,6 +72,7 @@ options:
       - windows
       - linux
     required: true
+    type: str
   os_state:
     description:
       - The allowed values for OS State are 'Generalized'.
@@ -72,73 +80,92 @@ options:
       - generalized
       - specialized
     required: true
+    type: str
   end_of_life_date:
     description:
       - >-
         The end of life date of the gallery Image Definition. This property can
         be used for decommissioning purposes. This property is updatable.
+        Format should be according to ISO-8601, for instance "2019-06-26".
+    type: str
   identifier:
     description:
-      - undefined
+      - Image identifier.
     required: true
+    type: dict
     suboptions:
       publisher:
         description:
           - The name of the gallery Image Definition publisher.
         required: true
+        type: str
       offer:
         description:
           - The name of the gallery Image Definition offer.
         required: true
+        type: str
       sku:
         description:
           - The name of the gallery Image Definition SKU.
         required: true
+        type: str
   recommended:
     description:
-      - undefined
+      - Recommended parameter values.
+    type: dict
     suboptions:
       v_cpus:
         description:
-          - undefined
+          - Number of virtual CPUs.
+        type: dict
         suboptions:
           min:
             description:
               - The minimum number of the resource.
+            type: int
           max:
             description:
               - The maximum number of the resource.
+            type: int
       memory:
         description:
-          - undefined
+          - Memory.
+        type: dict
         suboptions:
           min:
             description:
               - The minimum number of the resource.
+            type: int
           max:
             description:
               - The maximum number of the resource.
+            type: int
   disallowed:
     description:
-      - undefined
+      - Disallowed parameter values.
+    type: dict
     suboptions:
       disk_types:
         description:
-          - A list of disk types.
+          - A list of disallowed disk types.
         type: list
   purchase_plan:
     description:
-      - undefined
+      - Purchase plan.
+    type: dict
     suboptions:
       name:
         description:
           - The plan ID.
+        type: str
       publisher:
         description:
           - The publisher ID.
+        type: str
       product:
         description:
           - The product ID.
+        type: str
   state:
     description:
       - Assert the state of the GalleryImage.
@@ -149,6 +176,7 @@ options:
     choices:
       - absent
       - present
+    type: str
 extends_documentation_fragment:
   - azure
   - azure_tags
@@ -254,7 +282,7 @@ class AzureRMGalleryImages(AzureRMModuleBaseExt):
                          'specialized']
             ),
             end_of_life_date=dict(
-                type='datetime',
+                type='str',
                 disposition='/properties/endOfLifeDate'
             ),
             identifier=dict(
@@ -285,10 +313,10 @@ class AzureRMGalleryImages(AzureRMModuleBaseExt):
                         disposition='vCPUs',
                         options=dict(
                             min=dict(
-                                type='number'
+                                type='int'
                             ),
                             max=dict(
-                                type='number'
+                                type='int'
                             )
                         )
                     ),
@@ -296,10 +324,10 @@ class AzureRMGalleryImages(AzureRMModuleBaseExt):
                         type='dict',
                         options=dict(
                             min=dict(
-                                type='number'
+                                type='int'
                             ),
                             max=dict(
-                                type='number'
+                                type='int'
                             )
                         )
                     )
@@ -473,7 +501,6 @@ class AzureRMGalleryImages(AzureRMModuleBaseExt):
             response = json.loads(response.text)
         except Exception:
             response = {'text': response.text}
-            pass
 
         return response
 

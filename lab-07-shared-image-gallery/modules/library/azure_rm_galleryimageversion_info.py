@@ -17,9 +17,9 @@ DOCUMENTATION = '''
 ---
 module: azure_rm_galleryimageversion_info
 version_added: '2.9'
-short_description: Get GalleryImageVersion info.
+short_description: Get Azure SIG Image Version info.
 description:
-  - Get info of GalleryImageVersion.
+  - Get info of Azure SIG Image Version.
 options:
   resource_group:
     description:
@@ -52,18 +52,12 @@ author:
 '''
 
 EXAMPLES = '''
-- name: List gallery Image Versions in a gallery Image Definition.
+- name: List gallery image versions in a gallery image definition.
   azure_rm_galleryimageversion_info:
     resource_group: myResourceGroup
     gallery_name: myGallery
     gallery_image_name: myImage
-- name: Get a gallery Image Version.
-  azure_rm_galleryimageversion_info:
-    resource_group: myResourceGroup
-    gallery_name: myGallery
-    gallery_image_name: myImage
-    name: myVersion
-- name: Get a gallery Image Version with replication status.
+- name: Get a gallery image version.
   azure_rm_galleryimageversion_info:
     resource_group: myResourceGroup
     gallery_name: myGallery
@@ -73,10 +67,10 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-gallery_image_versions:
+versions:
   description: >-
-    A list of dict results where the key is the name of the GalleryImageVersion
-    and the values are the facts for that GalleryImageVersion.
+    A list of dict results where the key is the name of the version
+    and the values are the info for that version.
   returned: always
   type: complex
   contains:
@@ -87,19 +81,13 @@ gallery_image_versions:
       type: str
       sample: "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups
       /myResourceGroup/providers/Microsoft.Compute/galleries/myGallery/
-      images/myImage/versions/myVersion\"
+      images/myImage/versions/myVersion"
     name:
       description:
         - Resource name
       returned: always
       type: str
       sample: "myVersion"
-    type:
-      description:
-        - Resource type
-      returned: always
-      type: str
-      sample: "Microsoft.Compute/galleries/images/versions"
     location:
       description:
         - Resource location
@@ -112,27 +100,15 @@ gallery_image_versions:
       returned: always
       type: dict
       sample: { "tag": "value" }
-    properties:
-      returned: always
+    publishing_profile:
+      description:
+        - The publishing profile of a gallery image version.
       type: dict
-      contains:
-        publishingProfile:
-          description:
-            - The publishing profile of a gallery Image Version.
-          type: dict
-        storageProfile:
-          description:
-            - This is the storage profile of a gallery Image Version.
-          type: dict
-        replicationStatus:
-          description:
-            - This is the replication status of the gallery Image Version.
-          type: dict
-        provisioningState:
-            description:
-              - The current state of the gallery.
-            type: str
-            sample: "Succeeded"
+    provisioning_state:
+      description:
+        - The current state of the gallery.
+      type: str
+      sample: "Succeeded"
 
 '''
 
@@ -199,13 +175,11 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
                 self.gallery_name is not None and
                 self.gallery_image_name is not None and
                 self.name is not None):
-            # self.results['gallery_image_versions'] = self.format_item(self.get())
-            self.results['gallery_image_versions'] = self.get()
+            self.results['versions'] = self.get()
         elif (self.resource_group is not None and
               self.gallery_name is not None and
               self.gallery_image_name is not None):
-            # self.results['gallery_image_versions'] = self.format_item(self.listbygalleryimage())
-            self.results['gallery_image_versions'] = self.listbygalleryimage()
+            self.results['versions'] = self.listbygalleryimage()
         return self.results
 
     def get(self):
@@ -244,7 +218,7 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
-        return results
+        return self.format_item(results)
 
     def listbygalleryimage(self):
         response = None
@@ -280,7 +254,18 @@ class AzureRMGalleryImageVersionsInfo(AzureRMModuleBase):
         except CloudError as e:
             self.log('Could not get info for @(Model.ModuleOperationNameUpper).')
 
-        return results
+        return [self.format_item(x) for x in results['value']] if results['value'] else []
+
+    def format_item(self, item):
+        d = {
+            'id': item['id'],
+            'name': item['name'],
+            'location': item['location'],
+            'tags': item.get('tags'),
+            'publishing_profile': item['properties']['publishingProfile'],
+            'provisioning_state': item['properties']['provisioningState']
+        }
+        return d
 
 
 def main():
