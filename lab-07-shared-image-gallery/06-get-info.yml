@@ -7,7 +7,7 @@
 
   tasks:
   - name: Get Shared Image Gallery information
-    azure_rm_computegallery_info:
+    azure_rm_gallery_info:
       resource_group: "{{ resource_group }}"
       name: "{{ shared_gallery_name }}"
   - name: Get Shared Image Information
