@@ -33,10 +33,8 @@
           replica_count: 3
           storage_account_type: Standard_LRS
           target_regions:
-            - name: West US
+            - name: "{{ location }}"
               regional_replica_count: 1
-            - name: East US
-              regional_replica_count: 2
               storage_account_type: Standard_ZRS
           snapshot:
             name: "{{ snapshot_name }}"

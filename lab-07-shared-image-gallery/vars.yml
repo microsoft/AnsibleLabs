@@ -6,10 +6,9 @@ ip_name: testPublicIP
 source_vm_name: vmforimagepfxxyz
 network_interface_name: vmforimagepfxxyznic
 image_name: testimagea
-shared_gallery_name: myGallerypfxxyz
+shared_gallery_name: myGalleryEUS
 shared_image_name: myImage
 shared_image_version: 10.1.3
 vm_name: testvm001
 vmss_name: testvmss
-image_id: /subscriptions/1c5b82ee-9294-4568-b0c0-b9c523bc0d86/resourceGroups/myResourceGroup/providers/Microsoft.Compute/galleries/myGallerypfxxyz/images/myImage
 snapshot_name: mySnapshot
